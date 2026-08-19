@@ -1,5 +1,6 @@
 # TODO
 
+- [ ] Add Makefile
 - [ ] Implement the configuration parser. [Svetlana - started]
 - [ ] Implement the maze and cell data model.
 - [ ] Implement maze generation.

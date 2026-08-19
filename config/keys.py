@@ -1,0 +1,9 @@
+from enum import StrEnum
+
+class ConfigKey(StrEnum):
+	WIDTH="WIDTH"
+	HEIGHT="HEIGHT"
+	ENTRY="ENTRY"
+	EXIT="EXIT"
+	OUTPUT_FILE="OUTPUT_FILE"
+	PERFECT="PERFECT"
