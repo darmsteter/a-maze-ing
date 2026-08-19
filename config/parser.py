@@ -1,28 +1,57 @@
 from pydantic import ValidationError
 from .keys import ConfigKey
 from .models import Pair, Config
+from errors import ConfigurationException
 
 def store_config_value(values: dict[ConfigKey, str], key, value):
+	if not key:
+		raise ConfigurationException(
+			"Empty key. "
+            "Expected a key in the format KEY=VALUE."
+		)
+	if not value:
+		raise ConfigurationException(
+			"Empty value. "
+			f"Expected a value after '{key}='."
+		)
 	try: 
 		config_key = ConfigKey(key)
-	except ValueError as e:
-		raise ValueError(f"Unknown configuration key: {key}") from e
+	except ValueError:
+		raise ConfigurationException(f"Unknown configuration key: {key}")
 	
 	if config_key in values:
-		raise ValueError(f"Duplicate configuration key: {key}")
+		raise ConfigurationException(
+			f"Duplicate configuration key: {key}. "
+			"Each configuration key must appear only once."
+			)
 	
 	values[config_key] = value
 
-def parse_coordinates(coordinates: str) -> Pair:
+def parse_coordinates(field_name: str, coordinates: str) -> Pair:
 	splited_coordinates = coordinates.split(',')
 	if len(splited_coordinates) != 2: 
-		raise ValueError("It should be two coordinates!")
-	return Pair(
+		raise ConfigurationException(
+			f"{field_name} must contain exactly two coordinates "
+            f"in the format x,y; received: '{coordinates}'"
+		)
+	if not splited_coordinates[0] or not splited_coordinates[1]:
+		raise ConfigurationException(
+            f"{field_name} must contain two non-empty coordinates "
+            f"in the format x,y; received: '{coordinates}'"
+        )
+	try:
+		return Pair(
 			x=splited_coordinates[0],
 			y=splited_coordinates[1]
 		)
+		
+	except ValueError as e:
+		raise ConfigurationException(
+			f"{field_name} coordinates must be non-negative integers "
+            f"in the format x,y; received: '{coordinates}'"
+		)
 
-def parse_config_lines(line: str, values: dict[str, str]) -> None:
+def parse_config_lines(line: str, values: dict[ConfigKey, str]) -> None:
 	line = line.strip()
 	if not line.startswith('#') and line != "":
 		key, value = line.split('=', 1)
@@ -30,10 +59,21 @@ def parse_config_lines(line: str, values: dict[str, str]) -> None:
 		value = value.strip()
 		store_config_value(values, key, value)
 
+def validate_required_keys(values: dict[ConfigKey, str]) -> None:
+	missed_keys: list[str] = [
+		key.value for key in ConfigKey
+		if key not in values
+	]
+	if missed_keys:
+		raise ValueError(
+			"Missing required configuration key(s): "
+			f"{", ".join(key for key in missed_keys)}"
+		)
+
 def build_config(values: dict[ConfigKey, str]) -> Config:
 	try:
-		entry = parse_coordinates(values[ConfigKey.ENTRY])
-		exit = parse_coordinates(values[ConfigKey.EXIT])
+		entry = parse_coordinates(ConfigKey.ENTRY, values[ConfigKey.ENTRY])
+		exit = parse_coordinates(ConfigKey.EXIT, values[ConfigKey.EXIT])
 		config = Config(
 			width=values[ConfigKey.WIDTH.value],
 			height=values[ConfigKey.HEIGHT.value],
@@ -43,8 +83,7 @@ def build_config(values: dict[ConfigKey, str]) -> Config:
 			perfect=values[ConfigKey.PERFECT.value]
 		)
 	except (ValueError, ValidationError) as e:
-		print(e)
-		return
+		raise ValueError(e)
 	return(config)
 	
 def read_config_file() -> Config:
@@ -53,6 +92,7 @@ def read_config_file() -> Config:
 		with open("config.txt", "r") as config_file:
 			for line in config_file:
 				parse_config_lines(line, values)
+		validate_required_keys(values)
 		return build_config(values)
-	except (FileNotFoundError, PermissionError, ValueError) as e:
-		raise ValueError(e)
+	except (FileNotFoundError, PermissionError, ValueError, KeyError, ConfigurationException) as e:
+		raise ConfigurationException(e)
