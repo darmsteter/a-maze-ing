@@ -1,4 +1,9 @@
 from pydantic import BaseModel, Field, model_validator
+from enum import StrEnum
+
+class PerfectEnum(StrEnum):
+	TRUE = 'True'
+	FALSE = 'False'
 
 class Pair(BaseModel):
 	x: int = Field(..., ge=0)
@@ -10,7 +15,7 @@ class Config(BaseModel):
 	entry: Pair = Field(...)
 	exit: Pair = Field(...)
 	output_file: str = Field(..., min_length=1)
-	perfect: bool = Field(...)
+	perfect: PerfectEnum = Field(...)
 
 	@model_validator(mode='after')
 	def config_check(self) -> 'Config':
@@ -20,4 +25,5 @@ class Config(BaseModel):
 			raise ValueError("Exit should be inside maze.")
 		if self.entry.x == self.exit.x and self.entry.y == self.exit.y:
 			raise ValueError("Exit and enty shouldn't be same point.")
+		
 		return self
