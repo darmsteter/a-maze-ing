@@ -95,8 +95,7 @@ def build_config(values: dict[ConfigKey, str]) -> Config:
 		raise ConfigurationException(error_message)
 	return(config)
 	
-def read_config_file() -> Config:
-	file_name: str = "config.txt"
+def read_config_file(file_name: str) -> Config:
 	values: dict[ConfigKey, str] = {}
 	try:
 		with open(file_name, "r") as config_file:
