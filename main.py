@@ -6,4 +6,4 @@ if __name__ == "__main__":
 		config = read_config_file()
 		print(config)
 	except ConfigurationException as e:
-		print(e)
+		print(f"Configuration error: {e}")

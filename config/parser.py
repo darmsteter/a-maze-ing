@@ -44,7 +44,6 @@ def parse_coordinates(field_name: str, coordinates: str) -> Pair:
 			x=splited_coordinates[0],
 			y=splited_coordinates[1]
 		)
-		
 	except ValueError as e:
 		raise ConfigurationException(
 			f"{field_name} coordinates must be non-negative integers "
@@ -83,16 +82,31 @@ def build_config(values: dict[ConfigKey, str]) -> Config:
 			perfect=values[ConfigKey.PERFECT.value]
 		)
 	except (ValueError, ValidationError) as e:
-		raise ValueError(e)
+		error_dict = e.errors()
+		if error_dict[0]['type'] == 'value_error':
+			error_message = error_dict[0]['msg'].replace("Value error, ", '')
+		else:
+			error_message = '\n'.join([
+				f"Invalid value for field '{error['loc'][0]}':"
+				f" {error['msg']}"
+				f", but received '{error['input']}'."
+				for error in error_dict
+			])
+		raise ConfigurationException(error_message)
 	return(config)
 	
 def read_config_file() -> Config:
+	file_name: str = "config.txt"
 	values: dict[ConfigKey, str] = {}
 	try:
-		with open("config.txt", "r") as config_file:
+		with open(file_name, "r") as config_file:
 			for line in config_file:
 				parse_config_lines(line, values)
+	except (FileNotFoundError, PermissionError) as e:
+		raise ConfigurationException(e)
+	try:
 		validate_required_keys(values)
 		return build_config(values)
-	except (FileNotFoundError, PermissionError, ValueError, KeyError, ConfigurationException) as e:
+	except ConfigurationException as e:
 		raise ConfigurationException(e)
+	
