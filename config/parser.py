@@ -64,7 +64,7 @@ def validate_required_keys(values: dict[ConfigKey, str]) -> None:
 		if key not in values
 	]
 	if missed_keys:
-		raise ValueError(
+		raise ConfigurationException(
 			"Missing required configuration key(s): "
 			f"{", ".join(key for key in missed_keys)}"
 		)
