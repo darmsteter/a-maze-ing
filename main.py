@@ -2,6 +2,9 @@ from config import read_config_file, Config
 from errors import ConfigurationException
 from maze import Cell, create_grid, define_start_position
 from maze import generate_output_file
+
+from mazegen.mazegen import grafic_initialization
+from mazegen.generator import generate_maze
 import sys
 
 def draw_maze(grid: list[list[Cell]], config: Config) -> None:
@@ -57,10 +60,13 @@ if __name__ == "__main__":
 	# 	)
 	# 	exit()
 	try:
-		config = read_config_file("config.txt")
-		# config = read_config_file(sys.argv[1])
-		grid = create_grid(config)
-		define_start_position(grid, config)
+		config = read_config_file(sys.argv[1])
+		maze_map = generate_maze(config)
+		print("--- MAZE MAP ---")
+		for line in maze_map:
+			print(line)
+		print("------------------------")
+		grafic_initialization(maze_map)
 	except ConfigurationException as e:
 		print(f"Configuration error: {e}")
 		exit()
