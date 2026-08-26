@@ -1,0 +1,6 @@
+annotated-types==0.8.0
+mlx @ file:///home/carmen/Documents/amaze_lana/mlx-2.2/ubuntu/mlx-2.2-py3-none-any.whl#sha256=7a1a44b50b6295f574522ba1a1e589632c6299d193dec57c951e8fdfb3337195
+pydantic==2.13.4
+pydantic_core==2.46.4
+typing-inspection==0.4.4
+typing_extensions==4.16.0
