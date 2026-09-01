@@ -65,7 +65,7 @@ def parse_config_lines(line: str, values: dict[ConfigKey, str]) -> None:
 def validate_required_keys(values: dict[ConfigKey, str]) -> None:
     missed_keys: list[str] = [
         key.value for key in ConfigKey
-        if key not in values
+        if key not in values and key is not ConfigKey.SEED
     ]
     if missed_keys:
         raise ConfigurationException(
@@ -84,7 +84,8 @@ def build_config(values: dict[ConfigKey, str]) -> Config:
             entry=entry,
             exit=exit,
             output_file=values[ConfigKey.OUTPUT_FILE.value],
-            perfect=values[ConfigKey.PERFECT.value]
+            perfect=values[ConfigKey.PERFECT.value],
+            seed=values[ConfigKey.SEED.value] if ConfigKey.SEED in values else None
         )
     except (ValueError, ValidationError) as e:
         error_dict = e.errors()

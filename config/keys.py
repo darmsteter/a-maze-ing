@@ -8,3 +8,4 @@ class ConfigKey(StrEnum):
     EXIT = "EXIT"
     OUTPUT_FILE = "OUTPUT_FILE"
     PERFECT = "PERFECT"
+    SEED = "SEED"

@@ -19,6 +19,7 @@ class Config(BaseModel):
     exit: Pair = Field(...)
     output_file: str = Field(..., min_length=1)
     perfect: PerfectEnum = Field(...)
+    seed: int | None = Field(None)
 
     @model_validator(mode='after')
     def config_check(self) -> 'Config':

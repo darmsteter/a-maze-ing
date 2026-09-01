@@ -1,6 +1,6 @@
 from config.models import Config, Pair
 from .models import Cell
-from random import randrange
+import random
 from errors import ConfigurationException
 from .find_path  import find_path
 
@@ -35,10 +35,11 @@ def define_start_position(grid: list[list[Cell]], config: Config) -> str:
 		pattern = add_42(grid, config)
 	except ConfigurationException as e:
 		raise ConfigurationException(e)
+	random.seed(config.seed)
 	while True:
 		coordinate = Pair(
-			x=randrange(0, config.width),
-			y=randrange(0, config.height)
+			x=random.randrange(0, config.width),
+			y=random.randrange(0, config.height)
 			)
 		point = grid[coordinate.y][coordinate.x]
 		if not point.was_visited:
@@ -89,7 +90,7 @@ def generate_maze(grid: list[list[Cell]], visited_count: int, cell: Cell):
 		return 1
 	neighbours = find_neighbours(grid, cell)
 	while neighbours:
-		direction = randrange(0, 4)
+		direction = random.randrange(0, 4)
 		if direction not in neighbours:
 			continue
 		next_cell = neighbours[direction]
