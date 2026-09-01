@@ -2,6 +2,7 @@ from config.models import Config, Pair
 from .models import Cell
 from random import randrange
 from errors import ConfigurationException
+from .find_path  import find_path
 
 def add_42(grid: list[list[Cell]], config: Config):
 	if len(grid) < 7 or len(grid[0]) < 5:
@@ -29,7 +30,7 @@ def add_42(grid: list[list[Cell]], config: Config):
 			pattern_counter += 1
 	return pattern_counter
 
-def define_start_position(grid: list[list[Cell]], config: Config):
+def define_start_position(grid: list[list[Cell]], config: Config) -> str:
 	try:
 		pattern = add_42(grid, config)
 	except ConfigurationException as e:
@@ -44,6 +45,8 @@ def define_start_position(grid: list[list[Cell]], config: Config):
 			point.was_visited = 1
 			break
 	generate_maze(grid, 1 + pattern, point)
+	return find_path(config, grid)
+
 
 def break_wall(current: Cell, next: Cell, direction: int):
 	match direction:
