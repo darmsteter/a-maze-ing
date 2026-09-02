@@ -15,8 +15,11 @@ def add_42(grid: list[list[Cell]], config: Config):
 		"..x.x..",
 		"..x.xxx"
 	]
-	start_x = (len(grid[0]) - len(pattern[0])) // 2
-	start_y = (len(grid) - len(pattern)) // 2
+	
+	start_x = int((len(grid[0]) - len(pattern[0])) / 2)
+	if len(grid[0]) % 2 == 0:
+		start_x += 1
+	start_y = int((len(grid) - len(pattern)) / 2)
 	pattern_counter = 0
 	for y in range(len(pattern)):
 		for x in range(len(pattern[y])):
