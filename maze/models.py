@@ -11,6 +11,7 @@ class Cell():
 		self.left = 1
 
 		self.was_visited = 0
+		self.is_42 = 0
 
 def create_grid(config: Config):
 	grid: list[list[Cell]] = []

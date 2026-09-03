@@ -30,6 +30,7 @@ def add_42(grid: list[list[Cell]], config: Config):
 			if start_x + x == config.exit.x and start_y + y == config.exit.y:
 				raise ConfigurationException("Exit cannot be inside 42.")
 			grid[start_y + y][start_x + x].was_visited = 1
+			grid[start_y + y][start_x + x].is_42 = 1
 			pattern_counter += 1
 	return pattern_counter
 
@@ -48,6 +49,7 @@ def define_start_position(grid: list[list[Cell]], config: Config) -> str:
 		if not point.was_visited:
 			point.was_visited = 1
 			break
+	# prims(grid, point)
 	generate_maze(grid, 1 + pattern, point)
 	return find_path(config, grid)
 
@@ -67,7 +69,7 @@ def break_wall(current: Cell, next: Cell, direction: int):
 			current.left = 0
 			next.right = 0
 
-def find_neighbours(grid: list[list[Cell]], cell: Cell):
+def find_neighbours(grid: list[list[Cell]], cell: Cell) -> dict[int, Cell]:
 	neighbours: dict[int, Cell] = {}
 	if cell.y - 1 >= 0:
 		neighbour = grid[cell.y - 1][cell.x]
@@ -84,6 +86,26 @@ def find_neighbours(grid: list[list[Cell]], cell: Cell):
 	if cell.x - 1 >= 0:
 		neighbour = grid[cell.y][cell.x - 1]
 		if not neighbour.was_visited:
+			neighbours[3] = neighbour
+	return neighbours
+
+def find_visited_neighbours(grid: list[list[Cell]], cell: Cell):
+	neighbours: dict[int, Cell] = {}
+	if cell.y - 1 >= 0:
+		neighbour = grid[cell.y - 1][cell.x]
+		if neighbour.was_visited and not neighbour.is_42:
+			neighbours[0] = neighbour
+	if cell.x + 1 <= len(grid[0]) - 1:
+		neighbour = grid[cell.y][cell.x + 1]
+		if neighbour.was_visited and not neighbour.is_42:
+			neighbours[1] = neighbour
+	if cell.y + 1 <= len(grid) - 1:
+		neighbour = grid[cell.y + 1][cell.x]
+		if neighbour.was_visited and not neighbour.is_42:
+			neighbours[2] = neighbour
+	if cell.x - 1 >= 0:
+		neighbour = grid[cell.y][cell.x - 1]
+		if neighbour.was_visited and not neighbour.is_42:
 			neighbours[3] = neighbour
 	return neighbours
 
@@ -104,3 +126,18 @@ def generate_maze(grid: list[list[Cell]], visited_count: int, cell: Cell):
 		neighbours = find_neighbours(grid, cell)
 		continue
 	return 0
+
+def prims(grid: list[list[Cell]], cell: Cell):
+	frontier = []
+	for value in find_neighbours(grid, cell).values():
+		frontier.append(value)
+	while frontier:
+		current_cell = random.choice(frontier)
+		visited_neighbours = find_visited_neighbours(grid, current_cell)
+		direction = random.choice(list(visited_neighbours))
+		break_wall(current_cell, visited_neighbours[direction], direction)
+		frontier.remove(current_cell)
+		grid[current_cell.y][current_cell.x].was_visited = 1
+		for value in find_neighbours(grid, current_cell).values():
+			if value not in frontier: 
+				frontier.append(value)
