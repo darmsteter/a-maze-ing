@@ -20,6 +20,7 @@ class Config(BaseModel):
     output_file: str = Field(..., min_length=1)
     perfect: PerfectEnum = Field(...)
     seed: int | None = Field(None)
+    algorithm: str | None = "dfs"
 
     @model_validator(mode='after')
     def config_check(self) -> 'Config':
@@ -31,4 +32,6 @@ class Config(BaseModel):
             raise ValueError("Exit and enty shouldn't be same point.")
         if not self.output_file.endswith('.txt'):
             raise ValueError("Output file should end with .txt")
+        if self.algorithm.lower() not in ["dfs", "prim"]:
+            raise ValueError(f"Invalid algorithm {self.algorithm}. Choose either 'dfs' or 'prim'.")
         return self

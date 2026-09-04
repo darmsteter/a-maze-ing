@@ -9,3 +9,4 @@ class ConfigKey(StrEnum):
     OUTPUT_FILE = "OUTPUT_FILE"
     PERFECT = "PERFECT"
     SEED = "SEED"
+    ALGORITHM = "ALGORITHM"
