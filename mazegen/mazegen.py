@@ -1,113 +1,175 @@
-import os
-import mlx
-
-TILE_SIZE = 32
-
-colors = {
-    '1': 0x00FF00,  # Perete: Verde
-    '0': 0x000000,  # Cale: Negru
-    'S': 0xFFFF00,  # Start: Galben
-    'E': 0xFF0000   # Iesire: Rosu
-}
+from blessed import Terminal
+from config import Config
+from maze import find_path
+from maze.models import Cell
+from .themes import EMOJI_THEMES, LINE_THEMES
 
 
-def close_program(param=None):
-    """Callback function to terminate the program immediately."""
-    os._exit(0)
+def get_tile(
+    term: Terminal,
+    tile_type: str,
+    theme_name: str = "tree_garden",
+    mode: str = "emoji"
+) -> str:
+    """Getting the grafic format from selected theme"""
+    themes_dict = EMOJI_THEMES if mode == "emoji" else LINE_THEMES
+    default_theme = "tree_garden" if mode == "emoji" else "classic_pink"
+
+    theme = themes_dict.get(theme_name, themes_dict[default_theme])
+    tile_formatter = theme.get(tile_type, lambda t: '  ')
+
+    return tile_formatter(term)
 
 
-def handle_key(keycode, param=None):
-    """Handle ESC key to exit. (ESC key is 65307 on Linux / 53 on MacOs)."""
-    if keycode in (65307, 53):
-        os._exit(0)
-    return 0
+def draw_maze_emojis(
+        term: Terminal,
+        display_grid: list[list[str]],
+        theme_name: str
+):
+    """Randering the grill extinded by emojis"""
+    for y, row in enumerate(display_grid):
+        line = ""
+        for char in row:
+            if char == 'W':
+                line += get_tile(term, "wall", theme_name, mode="emoji")
+            elif char == 'S':
+                line += get_tile(term, "start", theme_name, mode="emoji")
+            elif char == 'E':
+                line += get_tile(term, "exit", theme_name, mode="emoji")
+            else:
+                line += get_tile(term, "path", theme_name, mode="emoji")
+
+        print(term.move_xy(0, y) + line, flush=True)
 
 
-def draw_block(buf, size_line, pixel_bytes, start_x, start_y, dimension, color):
-    """Draw a single block pixel by pixel directly into the image buffer."""
-    r = (color >> 16) & 0xFF
-    g = (color >> 8) & 0xFF
-    b = color & 0xFF
-
-    for y in range(start_y, start_y + dimension):
-        row_offset = y * size_line
-        for x in range(start_x, start_x + dimension):
-            offset = row_offset + x * pixel_bytes
-            buf[offset] = b
-            buf[offset + 1] = g
-            buf[offset + 2] = r
-            buf[offset + 3] = 255   # <-- opac, nu 0 (transparent)
+"""de rezolvat problema bordurilor"""
 
 
-def render_maze(param):
-    """Redraw the pre-built image onto the window (cheap blit)."""
-    m, mlx_ptr, win_ptr, img_ptr = param
-    m.mlx_put_image_to_window(mlx_ptr, win_ptr, img_ptr, 0, 0)
-    return 0
+def draw_maze_lines(
+        term: Terminal,
+        grid: list[list[Cell]],
+        config: Config,
+        theme_name: str
+):
+    """Renders the classic grid using row-based themes."""
+    for  y, row in enumerate(grid):
+        top_line = ""
+        mid_line = ""
+
+        for cell in row:
+            # Top wall
+            wall_tile = get_tile(term, "wall", theme_name, mode="line")
+            path_tile = get_tile(term, "path", theme_name, mode="line")
+
+            top_line += wall_tile if cell.top else path_tile
+
+            # Cell and right wall
+            if cell.is_start(config):
+                tile = get_tile(term, "start", theme_name, mode="line")
+            elif cell.is_exit(config):
+                tile = get_tile(term, "exit", theme_name, mode="line")
+            else:
+                tile = path_tile
+
+            right_wall = wall_tile if cell.right else path_tile
+            mid_line += tile + right_wall
+
+            print(term.move_xy(0, y * 2) + top_line, flush=True)
+            print(term.move_xy(0, y * 2 + 1) + mid_line, flush=True)
 
 
-def grafic_initialization(maze_map):
-    """Initialize MinilibX window and register event loops."""
-    lines_num = len(maze_map)
-    columns_num = len(maze_map[0])
+def parse_path_to_coords(
+        start_pos: tuple[int, int], path_str: str
+) -> list[tuple[int, int]]:
+    x, y = start_pos
+    coords = []
+    moves = {"N": (0, -1), "S": (0, 1), "E": (1, 0), "W": (-1, 0)}
 
-    window_width = columns_num * TILE_SIZE
-    window_hight = lines_num * TILE_SIZE
-
-    m = mlx.Mlx()
-    mlx_ptr = m.mlx_init()
-    win_ptr = m.mlx_new_window(mlx_ptr, window_width, window_hight, "A_maze_ing")
-
-    img_ptr = m.mlx_new_image(mlx_ptr, window_width, window_hight)
-    buf, bpp, size_line, img_format = m.mlx_get_data_addr(img_ptr)
-    pixel_bytes = bpp // 8
-
-    # Popularea imaginii o singura data la inceput
-    for y in range(lines_num):
-        for x in range(columns_num):
-            position = maze_map[y][x]
-            pos_x = x * TILE_SIZE
-            pos_y = y * TILE_SIZE
-            block_color = colors.get(position, 0x000000)
-            draw_block(buf, size_line, pixel_bytes, pos_x, pos_y, TILE_SIZE, block_color)
-
-    # Afisarea initiala pe fereastra
-    m.mlx_put_image_to_window(mlx_ptr, win_ptr, img_ptr, 0, 0)
-
-    # Hook-uri si evenimente
-    m.mlx_loop_hook(win_ptr, render_maze, (m, mlx_ptr, win_ptr, img_ptr))
-    m.mlx_hook(win_ptr, 17, 0, close_program, None)
-    m.mlx_hook(win_ptr, 2, 1, handle_key, None)
-
-    m.mlx_loop(mlx_ptr)
+    for move in path_str:
+        if move in moves:
+            dx, dy = moves[move]
+            x += dx
+            y += dy
+            coords.append((x, y))
+    return coords
 
 
-# Testing draw_block issue
+# def draw_maze(term: Terminal, grid: list[list[Cell]], config: Config):
+#     for y, row in enumerate(grid):
+#         line_str = "".join(get_tile(term, cell, config) for cell in row)
+#         print(term.move_xy(0, y) + line_str, flush=True)
 
-# import mlx
 
-# m = mlx.Mlx()
-# mlx_ptr = m.mlx_init()
-# win_ptr = m.mlx_new_window(mlx_ptr, 100, 100, "debug")
-# img_ptr = m.mlx_new_image(mlx_ptr, 100, 100)
+# def draw_maze(term: Terminal, grid: list[list[Cell]], config: Config):
+#     for y, row in enumerate(grid):
+#         top_line = ""
+#         mid_line = ""
 
-# buf, bpp, size_line, img_format = m.mlx_get_data_addr(img_ptr)
+#         for x, cell in enumerate(row):
+#             top_line += '🌳' if cell.top else '🟫'
 
-# print("bpp:", bpp)
-# print("size_line:", size_line)
-# print("format:", img_format)
-# print("len(buf):", len(buf))
+#             if cell.is_start(config):
+#                 tile = '🌳'
+#             elif cell.is_exit(config):
+#                 tile = '🚪'
+#             else:
+#                 tile = '🟫'
+#             right_wall = '🌳' if cell.right else '🟫'
+#             mid_line += tile + right_wall
+#         print(term.move_xy(0, y * 2) + top_line, flush=True)
+#         print(term.move_xy(0, y * 2 + 1) + mid_line, flush=True)
 
-# pixel_bytes = bpp // 8
-# print("pixel_bytes:", pixel_bytes)
 
-# # Umple tot buffer-ul cu ALB pur (255,255,255) si alpha maxim, ca sa fie
-# # imposibil sa nu se vada daca scrierea in buffer chiar ajunge pe ecran.
-# #
-# for i in range(len(buf)):
-#     buf[i] = 255
+def draw_solution_str(
+        term: Terminal, path, grid: list[list[Cell]], config: Config
+):
+    for x, y in path:
+        cell = grid[y][x]
+        if cell.is_start(config) or cell.is_exit(config):
+            continue
+        print(term.move_xy(x * 2, y) + term.on_pink('🐾'), flush=True)
 
-# print("primii 20 bytes dupa umplere:", list(buf[:20]))
 
-# m.mlx_put_image_to_window(mlx_ptr, win_ptr, img_ptr, 0, 0)
-# m.mlx_loop(mlx_ptr)
+def grafic_initialization(
+        config: Config,
+        grid: list[list[Cell]],
+        display_grid: list[list[str]] = None,
+        theme_name: str = "tree_garden",
+        mode: str = "emoji",
+        show_solution: bool = True
+):
+    term = Terminal()
+
+    with term.fullscreen(), term.cbreak(), term.hidden_cursor():
+        print(term.home + term.clear, end="", flush=True)
+        # Rendering by mode
+        if mode == "emoji" and display_grid:
+            draw_maze_emojis(term, display_grid, theme_name)
+            max_y = len(display_grid)
+        else:
+            draw_maze_lines(term, grid, config, theme_name)
+            max_y = len(grid) * 2
+
+        if show_solution:
+            solution_str = find_path(config, grid)
+            if solution_str:
+                start_pos = (int(config.entry.x), int(config.entry.y))
+                solution_coords = parse_path_to_coords(start_pos, solution_str)
+                draw_solution_str(term, solution_coords, grid, config)
+
+        print(
+            term.move_xy(0, max_y + 1)
+            + term.bold("Press 'ESC' or 'q' to exit game!"),
+            flush=True
+        )
+        # solution_str = find_path(config, grid)
+        # if solution_str:
+        #     start_pos = (config.entry.x, config.entry.y)
+        #     solution_coords = parse_path_to_coords(start_pos, solution_str)
+        #     draw_solution_str(term, solution_coords, grid, config)
+
+        while True:
+            key = term.inkey(timeout=0.1)
+
+            if key.code == term.KEY_ESCAPE or key.lower() == 'q':
+                break
