@@ -1,7 +1,7 @@
 from maze.models import Cell
 from config.models import Config
 
-def generate_output_file(grid: list[list[Cell]], config: Config, path):
+def generate_output_file(grid: list[list[Cell]], config: Config, path: str) -> None:
 	with open(config.output_file, 'w') as output_file:
 		for y in range(len(grid)):
 			for x in range(len(grid[y])):

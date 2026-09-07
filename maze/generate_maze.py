@@ -5,24 +5,17 @@ from config.models import Config, Pair, PerfectEnum
 from errors import ConfigurationException
 
 from .find_path import find_path
-from .models import Cell, Directions
+from .models import Cell, Directions, DIRECTIONS
 
 class GenerateMaze(abc.ABC):
-	directions = (
-		(Directions.TOP, 0, -1),
-		(Directions.RIGHT, 1, 0),
-		(Directions.BOTTOM, 0, 1),
-		(Directions.LEFT, -1, 0)
-		)
-
-	def __init__(self):
+	def __init__(self) -> None:
 		self.marked_cells = 0
 	
 	
-	def add_42(self, grid: list[list[Cell]], config: Config):
+	def add_42(self, grid: list[list[Cell]], config: Config) -> None:
 		if len(grid) < 7 or len(grid[0]) < 5:
 			print('The maze is too small to display "42" in the center.')
-			return 0
+			return
 		pattern = [
 			"x...xxx",
 			"x.....x",
@@ -85,7 +78,7 @@ class GenerateMaze(abc.ABC):
 
 	def find_neighbours(self, grid: list[list[Cell]], cell: Cell, visited: bool) -> dict[Directions, Cell]:
 		neighbours: dict[Directions, Cell] = {}
-		for direction, dir_x, dir_y in self.directions:
+		for direction, dir_x, dir_y in DIRECTIONS:
 			x = cell.x + dir_x
 			y = cell.y + dir_y
 			if not (0 <= x < len(grid[0]) and 0 <= y < len(grid)):
@@ -99,7 +92,7 @@ class GenerateMaze(abc.ABC):
 	def find_walled_neighbours(self, grid: list[list[Cell]], cell: Cell) -> dict[Directions, Cell]:
 		neighbours: dict[Directions, Cell] = {}
 		walls = (cell.top, cell.right, cell.bottom, cell.left)
-		for direction, dir_x, dir_y in self.directions:
+		for direction, dir_x, dir_y in DIRECTIONS:
 			x = cell.x + dir_x
 			y = cell.y + dir_y
 			if not (0 <= x < len(grid[0]) and 0 <= y < len(grid)):
@@ -110,7 +103,7 @@ class GenerateMaze(abc.ABC):
 				neighbours[direction] = neighbour
 		return neighbours
 
-	def is_dead_end(self, cell: Cell):
+	def is_dead_end(self, cell: Cell) -> bool:
 		return cell.top + cell.right + cell.bottom + cell.left == 3
 		
 
@@ -122,7 +115,7 @@ class GenerateMaze(abc.ABC):
 					dead_ends.append(grid[y][x])
 		return dead_ends
 
-	def imperfect_maze(self, grid: list[list[Cell]]):
+	def imperfect_maze(self, grid: list[list[Cell]]) -> None:
 		removed_walls = 0
 		while True:
 			dead_ends = self.find_dead_ends(grid)
@@ -169,7 +162,7 @@ class DepthFirstSearchAlgorithm(GenerateMaze):
 			return True
 		neighbours = self.find_neighbours(grid, cell, False)
 		while neighbours:
-			direction = random.randrange(0, 4)
+			direction = random.choice(list(neighbours))
 			if direction not in neighbours:
 				continue
 			next_cell = neighbours[direction]
