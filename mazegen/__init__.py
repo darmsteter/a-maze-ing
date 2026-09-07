@@ -1,4 +1,4 @@
 from mazegen.mazegen import grafic_initialization
-from mazegen.generator import generate_maze
+from generator import generate_maze  # Corectat fara 'mazegen.'
 
 __all__ = ["grafic_initialization", "generate_maze"]
