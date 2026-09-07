@@ -1,11 +1,35 @@
 from pydantic import BaseModel, Field, model_validator
 from enum import StrEnum
 
+class ConfigKey(StrEnum):
+    WIDTH = "WIDTH"
+    HEIGHT = "HEIGHT"
+    ENTRY = "ENTRY"
+    EXIT = "EXIT"
+    OUTPUT_FILE = "OUTPUT_FILE"
+    PERFECT = "PERFECT"
+    SEED = "SEED"
+    ALGORITHM = "ALGORITHM"
 
+    @classmethod
+    def required(cls) -> tuple["ConfigKey", ...]:
+        return(
+            cls.WIDTH,
+            cls.HEIGHT,
+            cls.ENTRY,
+            cls.EXIT,
+            cls.OUTPUT_FILE,
+            cls.PERFECT
+        )
+
+        
 class PerfectEnum(StrEnum):
     TRUE = 'True'
     FALSE = 'False'
 
+class AlgorithmEnum(StrEnum):
+    DFS = 'dfs'
+    PRIM = 'prim'
 
 class Pair(BaseModel):
     x: int = Field(..., ge=0)
@@ -20,7 +44,7 @@ class Config(BaseModel):
     output_file: str = Field(..., min_length=1)
     perfect: PerfectEnum = Field(...)
     seed: int | None = Field(None)
-    algorithm: str | None = "dfs"
+    algorithm: AlgorithmEnum | None = AlgorithmEnum.DFS
 
     @model_validator(mode='after')
     def config_check(self) -> 'Config':
@@ -32,6 +56,4 @@ class Config(BaseModel):
             raise ValueError("Exit and enty shouldn't be same point.")
         if not self.output_file.endswith('.txt'):
             raise ValueError("Output file should end with .txt")
-        if self.algorithm.lower() not in ["dfs", "prim"]:
-            raise ValueError(f"Invalid algorithm {self.algorithm}. Choose either 'dfs' or 'prim'.")
         return self

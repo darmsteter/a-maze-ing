@@ -1,3 +1,2 @@
 from .parser import read_config_file
-from .models import Config, Pair
-from .keys import ConfigKey
+from .models import Config, Pair, PerfectEnum, AlgorithmEnum, ConfigKey
