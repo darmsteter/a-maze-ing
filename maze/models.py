@@ -1,4 +1,11 @@
 from config.models import Config
+from enum import IntEnum
+
+class Directions(IntEnum):
+    TOP = 0
+    RIGHT = 1
+    BOTTOM = 2
+    LEFT = 3
 
 class Cell():
 	def __init__(self, x: int, y: int):
@@ -10,8 +17,8 @@ class Cell():
 		self.bottom = 1
 		self.left = 1
 
-		self.was_visited = 0
-		self.is_42 = 0
+		self.was_visited = False
+		self.is_42 = False
 
 def create_grid(config: Config):
 	grid: list[list[Cell]] = []

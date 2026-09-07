@@ -1,12 +1,24 @@
 import abc
-from config.models import Config, Pair
-from .models import Cell
 import random
-from errors import ConfigurationException
-from .find_path  import find_path
 
+from config.models import Config, Pair, PerfectEnum
+from errors import ConfigurationException
+
+from .find_path import find_path
+from .models import Cell, Directions
 
 class GenerateMaze(abc.ABC):
+	directions = (
+		(Directions.TOP, 0, -1),
+		(Directions.RIGHT, 1, 0),
+		(Directions.BOTTOM, 0, 1),
+		(Directions.LEFT, -1, 0)
+		)
+
+	def __init__(self):
+		self.marked_cells = 0
+	
+	
 	def add_42(self, grid: list[list[Cell]], config: Config):
 		if len(grid) < 7 or len(grid[0]) < 5:
 			print('The maze is too small to display "42" in the center.')
@@ -18,163 +30,152 @@ class GenerateMaze(abc.ABC):
 			"..x.x..",
 			"..x.xxx"
 		]
-		
-		start_x = int((len(grid[0]) - len(pattern[0])) / 2)
+		pattern_height = len(pattern)
+		pattern_width = len(pattern[0])
+		start_x = (len(grid[0]) - pattern_width) // 2
 		if len(grid[0]) % 2 == 0:
 			start_x += 1
-		start_y = int((len(grid) - len(pattern)) / 2)
-		pattern_counter = 0
-		for y in range(len(pattern)):
-			for x in range(len(pattern[y])):
+		start_y = (len(grid) - pattern_height) // 2
+		for y in range(pattern_height):
+			for x in range(pattern_width):
+				position = Pair(x=start_x + x, y=start_y + y)
 				if pattern[y][x] != 'x':
 					continue
-				if start_x + x == config.entry.x and start_y + y == config.entry.y:
+				if position == config.entry:
 					raise ConfigurationException("Entry cannot be inside 42.")
-				if start_x + x == config.exit.x and start_y + y == config.exit.y:
+				if position == config.exit:
 					raise ConfigurationException("Exit cannot be inside 42.")
-				grid[start_y + y][start_x + x].was_visited = 1
-				grid[start_y + y][start_x + x].is_42 = 1
-				pattern_counter += 1
-		return pattern_counter
+				grid[start_y + y][start_x + x].is_42 = True
+				self.marked_cells += 1
 
-	def define_start_position(self, grid: list[list[Cell]], config: Config) -> str:
-		try:
-			pattern = self.add_42(grid, config)
-		except ConfigurationException as e:
-			raise ConfigurationException(e)
+	def generate(self, grid: list[list[Cell]], config: Config) -> str:
+		self.marked_cells = 0
+		self.add_42(grid, config)
 		random.seed(config.seed)
 		while True:
 			coordinate = Pair(
-				x=random.randrange(0, config.width),
-				y=random.randrange(0, config.height)
+				x=random.randrange(config.width),
+				y=random.randrange(config.height)
 				)
-			point = grid[coordinate.y][coordinate.x]
-			if not point.was_visited:
-				point.was_visited = 1
-				break
-		self.generate_maze(grid, 1 + pattern, point)
-		if config.perfect == 'False':
+			cell = grid[coordinate.y][coordinate.x]
+			if cell.is_42:
+				continue
+			cell.was_visited = True
+			break
+		self.build_maze(grid, cell)
+		if config.perfect == PerfectEnum.FALSE:
 			self.imperfect_maze(grid)
 		return find_path(config, grid)
 
 
-	def break_wall(self, current: Cell, next: Cell, direction: int):
+	def break_wall(self, current: Cell, neighbour: Cell, direction: Directions) -> None:
 		match direction:
-			case 0:
+			case Directions.TOP:
 				current.top = 0
-				next.bottom = 0
-			case 1:
+				neighbour.bottom = 0
+			case Directions.RIGHT:
 				current.right = 0
-				next.left = 0
-			case 2:
+				neighbour.left = 0
+			case Directions.BOTTOM:
 				current.bottom = 0
-				next.top = 0
-			case 3:
+				neighbour.top = 0
+			case Directions.LEFT:
 				current.left = 0
-				next.right = 0
+				neighbour.right = 0
 
-	def find_neighbours(self, grid: list[list[Cell]], cell: Cell, visited: bool) -> dict[int, Cell]:
-		neighbours: dict[int, Cell] = {}
-		if cell.y - 1 >= 0:
-			neighbour = grid[cell.y - 1][cell.x]
-			if neighbour.was_visited is visited and not neighbour.is_42:
-				neighbours[0] = neighbour
-		if cell.x + 1 <= len(grid[0]) - 1:
-			neighbour = grid[cell.y][cell.x + 1]
-			if neighbour.was_visited is visited and not neighbour.is_42:
-				neighbours[1] = neighbour
-		if cell.y + 1 <= len(grid) - 1:
-			neighbour = grid[cell.y + 1][cell.x]
-			if neighbour.was_visited is visited and not neighbour.is_42:
-				neighbours[2] = neighbour
-		if cell.x - 1 >= 0:
-			neighbour = grid[cell.y][cell.x - 1]
-			if neighbour.was_visited is visited and not neighbour.is_42:
-				neighbours[3] = neighbour
+	def find_neighbours(self, grid: list[list[Cell]], cell: Cell, visited: bool) -> dict[Directions, Cell]:
+		neighbours: dict[Directions, Cell] = {}
+		for direction, dir_x, dir_y in self.directions:
+			x = cell.x + dir_x
+			y = cell.y + dir_y
+			if not (0 <= x < len(grid[0]) and 0 <= y < len(grid)):
+				continue
+			neighbour = grid[y][x]
+
+			if neighbour.was_visited == visited and not neighbour.is_42:
+				neighbours[direction] = neighbour
 		return neighbours
 
-	def find_walled_neighbours(self, grid: list[list[Cell]], cell: Cell):
-		neighbours: dict[int, Cell] = {}
-		if cell.y - 1 >= 0:
-			neighbour = grid[cell.y - 1][cell.x]
-			if cell.top and not neighbour.is_42:
-				neighbours[0] = neighbour
-		if cell.x + 1 <= len(grid[0]) - 1:
-			neighbour = grid[cell.y][cell.x + 1]
-			if cell.right and not neighbour.is_42:
-				neighbours[1] = neighbour
-		if cell.y + 1 <= len(grid) - 1:
-			neighbour = grid[cell.y + 1][cell.x]
-			if cell.bottom and not neighbour.is_42:
-				neighbours[2] = neighbour
-		if cell.x - 1 >= 0:
-			neighbour = grid[cell.y][cell.x - 1]
-			if cell.left and not neighbour.is_42:
-				neighbours[3] = neighbour
-		return neighbours	
+	def find_walled_neighbours(self, grid: list[list[Cell]], cell: Cell) -> dict[Directions, Cell]:
+		neighbours: dict[Directions, Cell] = {}
+		walls = (cell.top, cell.right, cell.bottom, cell.left)
+		for direction, dir_x, dir_y in self.directions:
+			x = cell.x + dir_x
+			y = cell.y + dir_y
+			if not (0 <= x < len(grid[0]) and 0 <= y < len(grid)):
+				continue
+			neighbour = grid[y][x]
 
-	def is_dead_ends(self, cell: Cell):
-		result = cell.top + cell.right + cell.bottom + cell.left
-		return result == 3
+			if walls[direction] and not neighbour.is_42:
+				neighbours[direction] = neighbour
+		return neighbours
+
+	def is_dead_end(self, cell: Cell):
+		return cell.top + cell.right + cell.bottom + cell.left == 3
 		
 
-	def find_dead_ends(self, grid: list[list[Cell]]):
+	def find_dead_ends(self, grid: list[list[Cell]]) -> list[Cell]:
 		dead_ends: list[Cell] = []
-		for y in range(0, len(grid)):
-			for x in range(0, len(grid[0])):
-				if self.is_dead_ends(grid[y][x]):
+		for y in range(len(grid)):
+			for x in range(len(grid[0])):
+				if self.is_dead_end(grid[y][x]):
 					dead_ends.append(grid[y][x])
 		return dead_ends
 
 	def imperfect_maze(self, grid: list[list[Cell]]):
-		loops = 0
+		removed_walls = 0
 		while True:
 			dead_ends = self.find_dead_ends(grid)
-			if len(dead_ends) <= 2 and loops > 2 or not len(dead_ends):
+			if (len(dead_ends) <= 2 and removed_walls > 2) or not dead_ends:
 				break
 			cell = random.choice(dead_ends)
 			neighbours = self.find_walled_neighbours(grid, cell)
 			if not neighbours:
+				dead_ends.remove(cell)
 				continue
 			direction = random.choice(list(neighbours))
 			self.break_wall(cell, neighbours[direction], direction)
-			loops += 1
+			removed_walls += 1
 
 	@abc.abstractmethod
-	def generate_maze(self, grid: list[Cell][Cell], visited_count: int, cell: Cell):
+	def build_maze(self, grid: list[list[Cell]], cell: Cell) -> None:
 		pass
 
 class PrimsAlgorithm(GenerateMaze):
-	def generate_maze(self, grid: list[Cell][Cell], visited_count: int, cell: Cell):
-		frontier = []
-		for value in self.find_neighbours(grid, cell, 0).values():
-			frontier.append(value)
+	def build_maze(self, grid: list[list[Cell]], cell: Cell) -> None:
+		frontier = list(
+			self.find_neighbours(grid, cell, False).values()
+		)
 		while frontier:
 			current_cell = random.choice(frontier)
-			visited_neighbours = self.find_neighbours(grid, current_cell, 1)
+			visited_neighbours = self.find_neighbours(grid, current_cell, True)
 			direction = random.choice(list(visited_neighbours))
 			self.break_wall(current_cell, visited_neighbours[direction], direction)
 			frontier.remove(current_cell)
-			grid[current_cell.y][current_cell.x].was_visited = 1
-			for value in self.find_neighbours(grid, current_cell, 0).values():
+			grid[current_cell.y][current_cell.x].was_visited = True
+			for value in self.find_neighbours(grid, current_cell, False).values():
 				if value not in frontier: 
 					frontier.append(value)
 
 
 class DepthFirstSearchAlgorithm(GenerateMaze):
-	def generate_maze(self, grid: list[Cell][Cell], visited_count: int, cell: Cell): 
-		if visited_count == len(grid) * len(grid[0]):
-			return 1
-		neighbours = self.find_neighbours(grid, cell, 0)
+	def build_maze(self, grid: list[list[Cell]], cell: Cell) -> None: 
+		remaining_cells = len(grid) * len(grid[0]) - self.marked_cells
+		self.dfs_recursive(grid, remaining_cells, cell)
+
+	def dfs_recursive(self, grid: list[list[Cell]], remaining_cells: int, cell: Cell) -> bool:
+		remaining_cells -= 1
+		if remaining_cells == 0:
+			return True
+		neighbours = self.find_neighbours(grid, cell, False)
 		while neighbours:
 			direction = random.randrange(0, 4)
 			if direction not in neighbours:
 				continue
 			next_cell = neighbours[direction]
-			next_cell.was_visited = 1
+			next_cell.was_visited = True
 			self.break_wall(cell, next_cell, direction)
-			if self.generate_maze(grid, visited_count + 1, next_cell):
-				return 1
-			neighbours = self.find_neighbours(grid, cell, 0)
-			continue
-		return 0
+			if self.dfs_recursive(grid, remaining_cells, next_cell):
+				return True
+			neighbours = self.find_neighbours(grid, cell, False)
+		return False
