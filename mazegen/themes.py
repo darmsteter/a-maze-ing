@@ -8,7 +8,7 @@ EMOJI_THEMES = {
         "pattern_42": lambda t: t.on_yellow('🧱')
     },
     "snowman": {
-        "wall": lambda t: t.on_lightblue('☃️ '),
+        "wall": lambda t: t.on_lightblue('🧸ྀི'),
         "path": lambda t: t.on_lightblue('  '),
         "start": lambda t: t.on_blue('⛇ '),
         "exit": lambda t: t.on_red('❄️ '),
@@ -22,6 +22,12 @@ EMOJI_THEMES = {
     "christmas": {
         "wall": lambda t: t.on_lightblue('🎄'),  # 🧱
         "path": lambda t: t.on_lightblue('⬜'),
+        "start": lambda t: t.on_blue('🎅'),
+        "exit": lambda t: t.on_white('🎁'),
+    },
+    "halloween": {
+        "wall": lambda t: t.on_orange('🍁'),  # 🧱
+        "path": lambda t: t.on_orange('  '),
         "start": lambda t: t.on_blue('🎅'),
         "exit": lambda t: t.on_white('🎁'),
     },

@@ -2,6 +2,8 @@ import time
 from blessed import Terminal
 from config import Config
 from maze import find_path
+from maze.generate_maze import generate_maze
+from generator import to_display_grid
 from maze.models import Cell
 from .themes import EMOJI_THEMES, LINE_THEMES
 
@@ -142,11 +144,23 @@ def draw_solution_str(
                 if animate:
                     time.sleep(delay)
         else:
+            p_lx, p_ly = prev_x * 2 + 1, prev_y * 2 + 1
+            c_lx, c_ly = curr_x * 2 + 1, curr_y * 2 + 1
+
+            mid_lx = (p_lx + c_lx) // 2
+            mid_ly = (p_ly + c_ly) // 2
+
+            if not (prev_x == int(config.entry.x) and
+                    prev_y == int(config.entry.y)):
+                print(term.move_xy(mid_lx * 2, mid_ly) + '🐾',
+                      flush=True)
+                if animate:
+                    time.sleep(delay)
+
+            # We draw the current cell (if we haven't reached the exit).
             if not grid[curr_y][curr_x].is_exit(config):
-                print(
-                    term.move_xy(curr_x * 2, curr_y * 2 + 1)
-                    + '🐾', flush=True
-                )
+                print(term.move_xy(c_lx * 2, c_ly) + '🐾',
+                      flush=True)
                 if animate:
                     time.sleep(delay)
 
@@ -157,7 +171,7 @@ def grafic_initialization(
         display_grid: list[list[str]] = None,
         theme_name: str = "tree_garden",
         mode: str = "emoji",
-        show_solution: bool = True
+        show_solution: bool = False
 ):
     term = Terminal()
 
@@ -167,14 +181,26 @@ def grafic_initialization(
         theme_name) if theme_name in available_themes else 0
     
     with term.fullscreen(), term.cbreak(), term.hidden_cursor():
-        solution_coords = []
-        if show_solution:
+        solution_coords: list[tuple[int, int]] = []
+
+        def update_solution():
+            nonlocal solution_coords
+            solution_coords = []
             solution_str = find_path(config, grid)
-            if solution_str:
-                start_pos = (int(config.entry.x), int(config.entry.y))
-                solution_coords = parse_path_to_coords(start_pos, solution_str)
+            if show_solution:
+                if solution_str:
+                    start_pos = (int(config.entry.x), int(config.entry.y))
+                    solution_coords = parse_path_to_coords(
+                        start_pos, solution_str)
+        update_solution()
 
         def render_all(animate_path: bool = False):
+            nonlocal theme_name
+
+            # Clean the entire screen.
+            print(term.home + term.clear, end="", flush=True)
+
+            # Cheching dimensions
             if mode == 'emoji' and display_grid:
                 required_w = len(display_grid[0]) * 2
                 required_h = len(display_grid) + 2
@@ -187,6 +213,8 @@ def grafic_initialization(
                 print(term.move_xy(0, 0) + term.black_on_yellow(msg),
                       flush=True)
             print(term.home + term.clear, end="", flush=True)
+
+            # First, we draw the maze.
             if mode == "emoji" and display_grid:
                 draw_maze_emojis(term, display_grid, theme_name)
                 max_y = len(display_grid)
@@ -194,11 +222,13 @@ def grafic_initialization(
                 draw_maze_lines(term, grid, config, theme_name)
                 max_y = len(grid) * 2
 
+            # We draw the command MENU below the maze
             sol_status = term.green("ON") if show_solution else term.red("OFF")
             controls_menu = (
-                f" {term.bold_cyan('[S]')} Solution: {sol_status} | ",
-                f"{term.bold_cyan('[T]')} Theme: {term.yellow(theme_name)} | ",
-                f"{term.bold_cyan('[M]')} Mode: {term.magenta(mode)} | ",
+                f" {term.bold_cyan('[R]')} Regenerate: | "
+                f"{term.bold_cyan('[S]')} Solution: {sol_status} | "
+                f"{term.bold_cyan('[T]')} Theme: {term.yellow(theme_name)} | "
+                f"{term.bold_cyan('[M]')} Mode: {term.magenta(mode)} | "
                 f"{term.bold_red('[Q/ESC]')} End game"
             )
             print(f"{term.move_xy(0, max_y + 1)} {controls_menu}", flush=True)
@@ -208,23 +238,34 @@ def grafic_initialization(
                     term, solution_coords, grid, config, mode=mode,
                     animate=animate_path, delay=0.03
                 )
-            render_all(animate_path=False)
+        render_all(animate_path=False)
 
-        #     print(
-        #         term.move_xy(0, max_y + 1)
-        #         + term.bold("Press 'ESC' or 'q' to exit game!"),
-        #         flush=True
-        #     )
-        # render_all()
-
+        # Keyboard commands --- de rezolvat problema
         while True:
             key = term.inkey(timeout=0.1)
 
             if key.is_sequence and key.name == "KEY_RESIZE":
                 render_all(animate_path=False)
+            elif key.lower() == 'r':
+                grid, path = generate_maze(config)
+                if mode == "emoji":
+                    display_grid = to_display_grid(
+                        grid,
+                        config.width,
+                        config.height
+                    )
+                show_solution = False
+                update_solution()
+                render_all(animate_path=show_solution)
             elif key.lower() == 's':
                 show_solution = not show_solution
-                render_all(animate_path=show_solution)
+                if show_solution:
+                    update_solution()
+                    render_all(animate_path=True)
+                else:
+                    solution_coords = []
+                    render_all(animate_path=False)
+                # render_all(animate_path=True)
             elif key.lower() == 't':
                 theme_index = (theme_index + 1) % len(available_themes)
                 theme_name = available_themes[theme_index]
