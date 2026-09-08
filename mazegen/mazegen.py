@@ -1,3 +1,4 @@
+import time
 from blessed import Terminal
 from config import Config
 from maze import find_path
@@ -32,6 +33,8 @@ def draw_maze_emojis(
         for char in row:
             if char == 'W':
                 line += get_tile(term, "wall", theme_name, mode="emoji")
+            elif char == '4':
+                line += get_tile(term, "pattern_42", theme_name, mode="emoji")
             elif char == 'S':
                 line += get_tile(term, "start", theme_name, mode="emoji")
             elif char == 'E':
@@ -51,16 +54,16 @@ def draw_maze_lines(
         config: Config,
         theme_name: str
 ):
-    """Renders the classic grid using row-based themes."""
-    for  y, row in enumerate(grid):
+    """
+    Renders the classic grid using row-based themes with full outer borders.
+    """
+    wall_tile = get_tile(term, "wall", theme_name, mode="line")
+    path_tile = get_tile(term, "path", theme_name, mode="line")
+    for y, row in enumerate(grid):
         top_line = ""
         mid_line = ""
 
         for cell in row:
-            # Top wall
-            wall_tile = get_tile(term, "wall", theme_name, mode="line")
-            path_tile = get_tile(term, "path", theme_name, mode="line")
-
             top_line += wall_tile if cell.top else path_tile
 
             # Cell and right wall
@@ -74,8 +77,10 @@ def draw_maze_lines(
             right_wall = wall_tile if cell.right else path_tile
             mid_line += tile + right_wall
 
-            print(term.move_xy(0, y * 2) + top_line, flush=True)
-            print(term.move_xy(0, y * 2 + 1) + mid_line, flush=True)
+        print(term.move_xy(0, y * 2) + top_line + wall_tile, flush=True)
+        print(term.move_xy(0, y * 2 + 1) + mid_line, flush=True)
+    bottom_line = wall_tile * (len(grid[0]) * 2 + 1)
+    print(term.move_xy(0, len(grid) * 2) + bottom_line, flush=True)
 
 
 def parse_path_to_coords(
@@ -94,40 +99,56 @@ def parse_path_to_coords(
     return coords
 
 
-# def draw_maze(term: Terminal, grid: list[list[Cell]], config: Config):
-#     for y, row in enumerate(grid):
-#         line_str = "".join(get_tile(term, cell, config) for cell in row)
-#         print(term.move_xy(0, y) + line_str, flush=True)
-
-
-# def draw_maze(term: Terminal, grid: list[list[Cell]], config: Config):
-#     for y, row in enumerate(grid):
-#         top_line = ""
-#         mid_line = ""
-
-#         for x, cell in enumerate(row):
-#             top_line += '🌳' if cell.top else '🟫'
-
-#             if cell.is_start(config):
-#                 tile = '🌳'
-#             elif cell.is_exit(config):
-#                 tile = '🚪'
-#             else:
-#                 tile = '🟫'
-#             right_wall = '🌳' if cell.right else '🟫'
-#             mid_line += tile + right_wall
-#         print(term.move_xy(0, y * 2) + top_line, flush=True)
-#         print(term.move_xy(0, y * 2 + 1) + mid_line, flush=True)
-
-
 def draw_solution_str(
-        term: Terminal, path, grid: list[list[Cell]], config: Config
+        term: Terminal,
+        path: list[tuple[int, int]],
+        grid: list[list[Cell]],
+        config: Config, mode:
+        str = "emoji",
+        animate: bool = False,
+        delay: float = 0.05
 ):
-    for x, y in path:
-        cell = grid[y][x]
-        if cell.is_start(config) or cell.is_exit(config):
-            continue
-        print(term.move_xy(x * 2, y) + term.on_pink('🐾'), flush=True)
+    if not path:
+        return
+
+    start = int(config.entry.x), int(config.entry.y)
+    full_path = [start] + path
+
+    for i in range(1, len(full_path)):
+        prev_x, prev_y = full_path[i - 1]
+        curr_x, curr_y = full_path[i]
+
+        if mode == "emoji":
+            # Extended coordinates for the previous and current cell
+            p_gx, p_gy = prev_x * 2 + 1, prev_y * 2 + 1
+            c_gx, c_gy = curr_x * 2 + 1, curr_y * 2 + 1
+
+            # We calculate the position of the broken wall.
+            mid_gx = (p_gx + c_gx) // 2
+            mid_gy = (p_gy + c_gy) // 2
+
+            # We draw the intermediate corridor (unless it is the entrance itself).
+            if not (prev_x == int(config.entry.x) and
+                    prev_y == int(config.entry.y)):
+                print(term.move_xy(mid_gx * 2, mid_gy) + '🐾',
+                      flush=True)
+                if animate:
+                    time.sleep(delay)
+
+            # We draw the current cell (if we haven't reached the exit).
+            if not grid[curr_y][curr_x].is_exit(config):
+                print(term.move_xy(c_gx * 2, c_gy) + '🐾',
+                      flush=True)
+                if animate:
+                    time.sleep(delay)
+        else:
+            if not grid[curr_y][curr_x].is_exit(config):
+                print(
+                    term.move_xy(curr_x * 2, curr_y * 2 + 1)
+                    + '🐾', flush=True
+                )
+                if animate:
+                    time.sleep(delay)
 
 
 def grafic_initialization(
@@ -140,36 +161,81 @@ def grafic_initialization(
 ):
     term = Terminal()
 
+    available_themes = list(
+        EMOJI_THEMES.keys())if mode == "emoji" else list(LINE_THEMES)
+    theme_index = available_themes.index(
+        theme_name) if theme_name in available_themes else 0
+    
     with term.fullscreen(), term.cbreak(), term.hidden_cursor():
-        print(term.home + term.clear, end="", flush=True)
-        # Rendering by mode
-        if mode == "emoji" and display_grid:
-            draw_maze_emojis(term, display_grid, theme_name)
-            max_y = len(display_grid)
-        else:
-            draw_maze_lines(term, grid, config, theme_name)
-            max_y = len(grid) * 2
-
+        solution_coords = []
         if show_solution:
             solution_str = find_path(config, grid)
             if solution_str:
                 start_pos = (int(config.entry.x), int(config.entry.y))
                 solution_coords = parse_path_to_coords(start_pos, solution_str)
-                draw_solution_str(term, solution_coords, grid, config)
 
-        print(
-            term.move_xy(0, max_y + 1)
-            + term.bold("Press 'ESC' or 'q' to exit game!"),
-            flush=True
-        )
-        # solution_str = find_path(config, grid)
-        # if solution_str:
-        #     start_pos = (config.entry.x, config.entry.y)
-        #     solution_coords = parse_path_to_coords(start_pos, solution_str)
-        #     draw_solution_str(term, solution_coords, grid, config)
+        def render_all(animate_path: bool = False):
+            if mode == 'emoji' and display_grid:
+                required_w = len(display_grid[0]) * 2
+                required_h = len(display_grid) + 2
+            else:
+                required_w = len(display_grid[0]) * 2 + 1
+                required_h = len(display_grid) + 2 + 3
+
+            if term.width < required_w or term.height < required_h:
+                msg = "Enlarge the terminal to see the maze!"
+                print(term.move_xy(0, 0) + term.black_on_yellow(msg),
+                      flush=True)
+            print(term.home + term.clear, end="", flush=True)
+            if mode == "emoji" and display_grid:
+                draw_maze_emojis(term, display_grid, theme_name)
+                max_y = len(display_grid)
+            else:
+                draw_maze_lines(term, grid, config, theme_name)
+                max_y = len(grid) * 2
+
+            sol_status = term.green("ON") if show_solution else term.red("OFF")
+            controls_menu = (
+                f" {term.bold_cyan('[S]')} Solution: {sol_status} | ",
+                f"{term.bold_cyan('[T]')} Theme: {term.yellow(theme_name)} | ",
+                f"{term.bold_cyan('[M]')} Mode: {term.magenta(mode)} | ",
+                f"{term.bold_red('[Q/ESC]')} End game"
+            )
+            print(f"{term.move_xy(0, max_y + 1)} {controls_menu}", flush=True)
+
+            if show_solution and solution_coords:
+                draw_solution_str(
+                    term, solution_coords, grid, config, mode=mode,
+                    animate=animate_path, delay=0.03
+                )
+            render_all(animate_path=False)
+
+        #     print(
+        #         term.move_xy(0, max_y + 1)
+        #         + term.bold("Press 'ESC' or 'q' to exit game!"),
+        #         flush=True
+        #     )
+        # render_all()
 
         while True:
             key = term.inkey(timeout=0.1)
+
+            if key.is_sequence and key.name == "KEY_RESIZE":
+                render_all(animate_path=False)
+            elif key.lower() == 's':
+                show_solution = not show_solution
+                render_all(animate_path=show_solution)
+            elif key.lower() == 't':
+                theme_index = (theme_index + 1) % len(available_themes)
+                theme_name = available_themes[theme_index]
+                render_all(animate_path=False)
+            elif key.lower() == 'm':
+                mode = "line" if mode == "emoji" else "emoji"
+                available_themes = list(EMOJI_THEMES.keys(
+                )) if mode == "emoji" else list(LINE_THEMES.keys())
+                theme_index = 0
+                theme_name = available_themes[0]
+                render_all(animate_path=False)
 
             if key.code == term.KEY_ESCAPE or key.lower() == 'q':
                 break

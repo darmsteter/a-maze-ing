@@ -3,8 +3,9 @@ EMOJI_THEMES = {
     "tree_garden": {
         "wall": lambda t: t.on_lightgreen('🌳'),
         "path": lambda t: t.on_black('🟫'),
-        "start": lambda t: t.on_yellow('𖠋 '),
+        "start": lambda t: t.on_yellow('🏠'),
         "exit": lambda t: t.on_white('🚪'),
+        "pattern_42": lambda t: t.on_yellow('🧱')
     },
     "snowman": {
         "wall": lambda t: t.on_lightblue('☃️ '),
