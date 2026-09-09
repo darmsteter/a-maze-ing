@@ -62,9 +62,7 @@ def compile_path(
 	return ''.join(path)
 
 
-def find_path(config: Config, grid: list[list[Cell]]) -> str:
-	exit = (config.exit.x, config.exit.y)
-	entry = (config.entry.x, config.entry.y)
+def find_path(exit: tuple[int, int], entry: tuple[int, int], grid: list[list[Cell]]) -> str:
 	frontier: list[tuple[int, int, tuple[int, int]]] = []
 	g_score = {
 		entry: 0

@@ -2,7 +2,7 @@ import time
 from blessed import Terminal
 from config import Config
 from maze import find_path
-from maze.generate_maze import generate_maze
+from maze.generate_maze import MazeGenerator
 from generator import to_display_grid
 from maze.models import Cell
 from .themes import EMOJI_THEMES, LINE_THEMES
@@ -186,7 +186,7 @@ def grafic_initialization(
         def update_solution():
             nonlocal solution_coords
             solution_coords = []
-            solution_str = find_path(config, grid)
+            solution_str = find_path((config.exit.x, config.exit.y), (config.entry.x, config.entry.y), grid)
             if show_solution:
                 if solution_str:
                     start_pos = (int(config.entry.x), int(config.entry.y))
@@ -247,7 +247,16 @@ def grafic_initialization(
             if key.is_sequence and key.name == "KEY_RESIZE":
                 render_all(animate_path=False)
             elif key.lower() == 'r':
-                grid, path = generate_maze(config)
+                generator = MazeGenerator()
+                grid, path = generator.generate(
+                config.height, 
+                config.width, 
+                (config.entry.x, config.entry.y), 
+                (config.exit.x, config.exit.y), 
+                config.seed, 
+                config.perfect, 
+                config.algorithm
+            )
                 if mode == "emoji":
                     display_grid = to_display_grid(
                         grid,

@@ -1,18 +1,27 @@
 import abc
 import random
 
-from config.models import Config, Pair, PerfectEnum
 from errors import ConfigurationException
 
 from .find_path import find_path
-from .models import Cell, Directions, DIRECTIONS, create_grid
+from .models import Cell, Directions, DIRECTIONS
 
 
-class GenerateMaze(abc.ABC):
+class MazeGenerator():
     def __init__(self) -> None:
         self.marked_cells = 0
 
-    def add_42(self, grid: list[list[Cell]], config: Config) -> None:
+    def create_grid(self, height: int, width: int) -> list[list[Cell]]:
+        grid: list[list[Cell]] = []
+        for y in range(height):
+            row: list[Cell] = []
+            for x in range(width):
+                row.append(Cell(x=x, y=y))
+            grid.append(row)
+        return grid
+
+
+    def add_42(self, grid: list[list[Cell]], entry: tuple[int, int], exit: tuple[int, int]) -> None:
         if len(grid) < 7 or len(grid[0]) < 5:
             print('The maze is too small to display "42" in the center.')
             return
@@ -31,34 +40,36 @@ class GenerateMaze(abc.ABC):
         start_y = (len(grid) - pattern_height) // 2
         for y in range(pattern_height):
             for x in range(pattern_width):
-                position = Pair(x=start_x + x, y=start_y + y)
+                position = (start_x + x, start_y + y)
                 if pattern[y][x] != 'x':
                     continue
-                if position == config.entry:
+                if position == entry:
                     raise ConfigurationException("Entry cannot be inside 42.")
-                if position == config.exit:
+                if position == exit:
                     raise ConfigurationException("Exit cannot be inside 42.")
                 grid[start_y + y][start_x + x].is_42 = True
                 self.marked_cells += 1
 
-    def generate(self, grid: list[list[Cell]], config: Config) -> str:
+    def generate(self, height: int, width: int, entry: tuple[int, int], exit: tuple[int, int], seed: int | None, perfect: bool, algorithm: str) -> tuple[list[list[Cell]], str]:
+        grid = self.create_grid(height, width)
         self.marked_cells = 0
-        self.add_42(grid, config)
-        random.seed(config.seed)
+        self.add_42(grid, entry, exit)
+        random.seed(seed)
         while True:
-            coordinate = Pair(
-                x=random.randrange(config.width),
-                y=random.randrange(config.height)
-                )
-            cell = grid[coordinate.y][coordinate.x]
+            x = random.randrange(width)
+            y = random.randrange(height)
+            cell = grid[y][x]
             if cell.is_42:
                 continue
             cell.was_visited = True
             break
-        self.build_maze(grid, cell)
-        if config.perfect == PerfectEnum.FALSE:
+        if algorithm.lower() == 'prim':
+            self._generate_prim(grid, cell)
+        else:
+            self._generate_dfs(grid, cell)
+        if perfect == False:
             self.imperfect_maze(grid)
-        return find_path(config, grid)
+        return grid, find_path(exit, entry, grid)
 
 
     def break_wall(self, current: Cell, neighbour: Cell, direction: Directions) -> None:
@@ -130,13 +141,9 @@ class GenerateMaze(abc.ABC):
             self.break_wall(cell, neighbours[direction], direction)
             removed_walls += 1
 
-    @abc.abstractmethod
-    def build_maze(self, grid: list[list[Cell]], cell: Cell) -> None:
-        pass
 
 
-class PrimsAlgorithm(GenerateMaze):
-    def build_maze(self, grid: list[list[Cell]], cell: Cell) -> None:
+    def _generate_prim(self, grid: list[list[Cell]], cell: Cell) -> None:
         frontier = list(
             self.find_neighbours(grid, cell, False).values()
         )
@@ -152,8 +159,7 @@ class PrimsAlgorithm(GenerateMaze):
                     frontier.append(value)
 
 
-class DepthFirstSearchAlgorithm(GenerateMaze):
-    def build_maze(self, grid: list[list[Cell]], cell: Cell) -> None: 
+    def _generate_dfs(self, grid: list[list[Cell]], cell: Cell) -> None: 
         remaining_cells = len(grid) * len(grid[0]) - self.marked_cells
         self.dfs_recursive(grid, remaining_cells, cell)
 
@@ -173,10 +179,3 @@ class DepthFirstSearchAlgorithm(GenerateMaze):
                 return True
             neighbours = self.find_neighbours(grid, cell, False)
         return False
-
-
-def generate_maze(config: Config) -> tuple[list[list[Cell]], str]:
-    grid = create_grid(config.height, config.width)
-    generator = DepthFirstSearchAlgorithm()
-    path_str = generator.generate(grid, config)
-    return grid, path_str
