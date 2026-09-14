@@ -31,23 +31,20 @@ def draw_maze_emojis(
 ):
     """Randering the grill extinded by emojis"""
     for y, row in enumerate(display_grid):
-        line = ""
+        tile = ""
         for char in row:
             if char == 'W':
-                line += get_tile(term, "wall", theme_name, mode="emoji")
+                tile += get_tile(term, "wall", theme_name, mode="emoji")
             elif char == '4':
-                line += get_tile(term, "pattern_42", theme_name, mode="emoji")
+                tile += get_tile(term, "pattern_42", theme_name, mode="emoji")
             elif char == 'S':
-                line += get_tile(term, "start", theme_name, mode="emoji")
+                tile += get_tile(term, "start", theme_name, mode="emoji")
             elif char == 'E':
-                line += get_tile(term, "exit", theme_name, mode="emoji")
+                tile += get_tile(term, "exit", theme_name, mode="emoji")
             else:
-                line += get_tile(term, "path", theme_name, mode="emoji")
+                tile += get_tile(term, "path", theme_name, mode="emoji")
 
-        print(term.move_xy(0, y) + line, flush=True)
-
-
-"""de rezolvat problema bordurilor"""
+        print(term.move_xy(0, y) + tile, flush=True)
 
 
 def draw_maze_lines(
@@ -132,12 +129,12 @@ def draw_solution_str(
             mid_gy = (p_gy + c_gy) // 2
 
             # We draw the intermediate corridor (unless it is the entrance itself).
-            if not (prev_x == int(config.entry.x) and
-                    prev_y == int(config.entry.y)):
-                print(term.move_xy(mid_gx * 2, mid_gy) + '🐾',
-                      flush=True)
-                if animate:
-                    time.sleep(delay)
+            # if not (prev_x == int(config.entry.x) and
+            #         prev_y == int(config.entry.y)):
+            print(term.move_xy(mid_gx * 2, mid_gy) + '🐾',
+                    flush=True)
+            if animate:
+                time.sleep(delay)
 
             # We draw the current cell (if we haven't reached the exit).
             if not grid[curr_y][curr_x].is_exit(config):
@@ -152,12 +149,12 @@ def draw_solution_str(
             mid_lx = (p_lx + c_lx) // 2
             mid_ly = (p_ly + c_ly) // 2
 
-            if not (prev_x == int(config.entry.x) and
-                    prev_y == int(config.entry.y)):
-                print(term.move_xy(mid_lx * 2, mid_ly) + '🐾',
-                      flush=True)
-                if animate:
-                    time.sleep(delay)
+            # if not (prev_x == int(config.entry.x) and
+            #         prev_y == int(config.entry.y)):
+            print(term.move_xy(mid_lx * 2, mid_ly) + '🐾',
+                    flush=True)
+            if animate:
+                time.sleep(delay)
 
             # We draw the current cell (if we haven't reached the exit).
             if not grid[curr_y][curr_x].is_exit(config):
@@ -263,7 +260,8 @@ def grafic_initialization(
                     display_grid = to_display_grid(
                         grid,
                         config.width,
-                        config.height
+                        config.height,
+                        config
                     )
                 show_solution = False
                 update_solution()
