@@ -62,11 +62,12 @@ def draw_maze_lines(
     wall_tile = get_tile(term, "wall", theme_name, mode="line")
     path_tile = get_tile(term, "path", theme_name, mode="line")
     for y, row in enumerate(grid):
-        top_line = ""
-        mid_line = ""
+        top_line = wall_tile
+        mid_line = wall_tile
 
         for cell in row:
-            top_line += wall_tile if cell.top else path_tile
+            top_wall = wall_tile if cell.top else path_tile
+            top_line += top_wall + wall_tile
 
             # Cell and right wall
             if cell.is_start(config):
@@ -79,8 +80,9 @@ def draw_maze_lines(
             right_wall = wall_tile if cell.right else path_tile
             mid_line += tile + right_wall
 
-        print(term.move_xy(0, y * 2) + top_line + wall_tile, flush=True)
+        print(term.move_xy(0, y * 2) + top_line, flush=True)
         print(term.move_xy(0, y * 2 + 1) + mid_line, flush=True)
+
     bottom_line = wall_tile * (len(grid[0]) * 2 + 1)
     print(term.move_xy(0, len(grid) * 2) + bottom_line, flush=True)
 
@@ -179,7 +181,7 @@ def grafic_initialization(
         EMOJI_THEMES.keys())if mode == "emoji" else list(LINE_THEMES)
     theme_index = available_themes.index(
         theme_name) if theme_name in available_themes else 0
-    
+
     with term.fullscreen(), term.cbreak(), term.hidden_cursor():
         solution_coords: list[tuple[int, int]] = []
 
