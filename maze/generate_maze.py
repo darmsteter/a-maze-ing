@@ -87,6 +87,21 @@ class MazeGenerator():
                 current.left = 0
                 neighbour.right = 0
 
+    def add_wall(self, current: Cell, neighbour: Cell, direction: Directions) -> None:
+        match direction:
+            case Directions.TOP:
+                current.top = 1
+                neighbour.bottom = 1
+            case Directions.RIGHT:
+                current.right = 1
+                neighbour.left = 1
+            case Directions.BOTTOM:
+                current.bottom = 1
+                neighbour.top = 1
+            case Directions.LEFT:
+                current.left = 1
+                neighbour.right = 1
+
     def find_neighbours(self, grid: list[list[Cell]], cell: Cell, visited: bool) -> dict[Directions, Cell]:
         neighbours: dict[Directions, Cell] = {}
         for direction, dir_x, dir_y in DIRECTIONS:
@@ -115,12 +130,10 @@ class MazeGenerator():
         return neighbours
 
     def is_dead_end(self, cell: Cell, grid: list[list[Cell]]) -> bool:
-        try:
-            if (grid[cell.y + 1][cell.x].is_42 and grid[cell.y - 1][cell.x].is_42):
-                return False
-        except IndexError:
-            return cell.top + cell.right + cell.bottom + cell.left == 3
-        return cell.top + cell.right + cell.bottom + cell.left == 3
+        if cell.top + cell.right + cell.bottom + cell.left != 3:
+            return False
+        return bool(self.find_walled_neighbours(grid, cell))
+
 
     def find_dead_ends(self, grid: list[list[Cell]]) -> list[Cell]:
         dead_ends: list[Cell] = []
@@ -131,33 +144,35 @@ class MazeGenerator():
         return dead_ends
 
 
-    def find_open_spaces(self, grid: list[list[Cell]]):
+    def close_open_space(self, grid: list[list[Cell]]):
         for y in range(len(grid)):
             for x in range(len(grid[y])):
-                if not grid[y][x].top and not grid[y][x].bottom and not grid[y][x].left and not grid[y][x].right:
-                    print(True)
-                    if grid[y - 1][x - 1].right or grid[y - 1][x - 1].bottom:
-                        continue
-                    if grid[y - 1][x + 1].left or grid[y - 1][x + 1].bottom:
-                        continue
-                    if grid[y + 1][x - 1].right or grid[y + 1][x - 1].top:
-                        continue
-                    if grid[y + 1][x + 1].left or grid[y + 1][x + 1].top:
-                        continue
-                    grid[y][x].top = 1
-                    grid[y - 1][x].bottom = 1
-                    return True
+                cell = grid[y][x]
+                if cell.top or cell.bottom or cell.left or cell.right:
+                    continue
+                if any((
+                    grid[y - 1][x - 1].right,
+                    grid[y - 1][x - 1].bottom,
+                    grid[y - 1][x + 1].left,
+                    grid[y - 1][x + 1].bottom,
+                    grid[y + 1][x - 1].right,
+                    grid[y + 1][x - 1].top,
+                    grid[y + 1][x + 1].left,
+                    grid[y + 1][x + 1].top
+                )):
+                    continue
+                directions = random.sample(DIRECTIONS, random.randint(1, 2))
+                for direction, dir_x, dir_y in directions:
+                    self.add_wall(cell, grid[y + dir_y][x + dir_x], direction)
         return False
 
     def imperfect_maze(self, grid: list[list[Cell]]) -> None:
         while True:
             dead_ends = self.find_dead_ends(grid)
             if len(dead_ends) == 0:
-                if self.find_open_spaces(grid):
+                if self.close_open_space(grid):
                     continue
                 break
-            # if (len(dead_ends) <= 2 and removed_walls > 2) or not dead_ends:
-            #     break
             if not dead_ends:
                 break
             cell = random.choice(dead_ends)
@@ -167,7 +182,6 @@ class MazeGenerator():
                 continue
             direction = random.choice(list(neighbours))
             self.break_wall(cell, neighbours[direction], direction)
-
 
 
     def _generate_prim(self, grid: list[list[Cell]], cell: Cell) -> None:
