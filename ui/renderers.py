@@ -12,7 +12,7 @@ def draw_maze_frame_and_title(
         height: int,
         title: str = "A_MAZE_ING GAME"
 ) -> None:
-    title_x = max(0, width - len(title) // 2)
+    title_x = max(0, (width - len(title)) // 2)
     print(term.move_xy(title_x, 0) + term.bold_cyan(title), flush=True)
 
     top_border = (
@@ -139,7 +139,7 @@ def render_all(
     mode: str,
     show_solution: bool,
     solution_coords: list[tuple[int, int]],
-    display_grid: list[list[str]] = None,
+    display_grid: list[list[str]],
     animate_path: bool = False
 ):
     if not check_terminal_size(term, mode, display_grid, grid):

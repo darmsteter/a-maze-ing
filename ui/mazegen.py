@@ -1,7 +1,7 @@
 from blessed import Terminal
 from config import Config
 from maze.models import Cell
-from maze.generate_maze import generate_maze
+from maze.generate_maze import MazeGenerator
 from .grid_converter import to_display_grid
 from ui.renderers import render_all
 from .themes import EMOJI_THEMES, LINE_THEMES
@@ -11,11 +11,12 @@ from solution import get_solution_coords
 def grafic_initialization(
         config: Config,
         grid: list[list[Cell]],
-        display_grid: list[list[str]] = None,
+        display_grid: list[list[str]],
         theme_name: str = "tree_garden",
         mode: str = "emoji",
         show_solution: bool = False
 ):
+    generate = MazeGenerator()
     term = Terminal()
     available_themes = list(
         EMOJI_THEMES.keys())if mode == "emoji" else list(LINE_THEMES)
@@ -41,7 +42,15 @@ def grafic_initialization(
             if key.is_sequence and key.name == "KEY_RESIZE":
                 refresh_ui(animate=False)
             elif key.lower() == 'r':
-                grid, path = generate_maze(config)
+                grid, path = generate.generate(
+                    config.height,
+                    config.width,
+                    (config.entry.x, config.entry.y),
+                    (config.exit.x, config.exit.y),
+                    config.seed,
+                    config.perfect,
+                    config.algorithm
+                )
                 if mode == "emoji":
                     display_grid = to_display_grid(
                         grid,
@@ -55,10 +64,6 @@ def grafic_initialization(
             elif key.lower() == 's':
                 show_solution = not show_solution
                 refresh_ui(animate=show_solution)
-                # else:
-                #     solution_coords = []
-                #     render_all(animate_path=False)
-                # render_all(animate_path=True)
 
             elif key.lower() == 't':
                 theme_index = (theme_index + 1) % len(available_themes)
@@ -78,4 +83,3 @@ def grafic_initialization(
                         grid, config.width, config.height, config
                     )
                 refresh_ui(animate=False)
-

@@ -1,4 +1,5 @@
 from blessed import Terminal
+from maze.models import Cell
 
 
 def check_terminal_size(

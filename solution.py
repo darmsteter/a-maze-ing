@@ -23,7 +23,9 @@ def get_solution_coords(
         config: Config,
         grid: list[list[Cell]]
 ) -> list[tuple[int, int]]:
-    solution_str = find_path(config, grid)
+    entry_pos = (int(config.entry.x), int(config.entry.y))
+    exit_pos = (int(config.exit.x), int(config.exit.y))
+    solution_str = find_path(exit_pos, entry_pos, grid)
     if solution_str:
         start_pos = (int(config.entry.x), int(config.entry.y))
         return parse_path_to_coords(start_pos, solution_str)
