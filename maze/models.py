@@ -40,10 +40,10 @@ class Cell:
         )
 
     def is_start(self, config) -> bool:
-        return self.x == config.entry.x and self.y == config.entry.y
+        return self.x == int(config.entry.x) and self.y == int(config.entry.y)
 
     def is_exit(self, config) -> bool:
-        return self.x == config.exit.x and self.y == config.exit.y
+        return self.x == int(config.exit.x) and self.y == int(config.exit.y)
 
 
 def create_grid(height: int, width: int) -> list[list[Cell]]:

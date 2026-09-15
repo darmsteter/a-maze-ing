@@ -3,8 +3,8 @@ from errors import ConfigurationException
 from maze import Cell, create_grid, define_start_position
 from maze import generate_output_file
 
-from mazegen.mazegen import grafic_initialization
-from mazegen.generator import generate_maze
+from ui.mazegen import grafic_initialization
+from ui.grid_converter import generate_maze
 import sys
 
 def draw_maze(grid: list[list[Cell]], config: Config) -> None:

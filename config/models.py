@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, model_validator
 from enum import StrEnum
 
+
 class ConfigKey(StrEnum):
     WIDTH = "WIDTH"
     HEIGHT = "HEIGHT"
@@ -13,7 +14,7 @@ class ConfigKey(StrEnum):
 
     @classmethod
     def required(cls) -> tuple["ConfigKey", ...]:
-        return(
+        return (
             cls.WIDTH,
             cls.HEIGHT,
             cls.ENTRY,
@@ -22,14 +23,16 @@ class ConfigKey(StrEnum):
             cls.PERFECT
         )
 
-        
+
 class PerfectEnum(StrEnum):
     TRUE = 'True'
     FALSE = 'False'
 
+
 class AlgorithmEnum(StrEnum):
     DFS = 'dfs'
     PRIM = 'prim'
+
 
 class Pair(BaseModel):
     x: int = Field(..., ge=0)
