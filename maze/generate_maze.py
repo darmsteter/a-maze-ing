@@ -67,7 +67,7 @@ class MazeGenerator():
             self._generate_prim(grid, cell)
         else:
             self._generate_dfs(grid, cell)
-        if perfect == False:
+        if perfect == "False":
             self.imperfect_maze(grid)
         return grid, find_path(exit, entry, grid)
 
@@ -114,23 +114,51 @@ class MazeGenerator():
                 neighbours[direction] = neighbour
         return neighbours
 
-    def is_dead_end(self, cell: Cell) -> bool:
+    def is_dead_end(self, cell: Cell, grid: list[list[Cell]]) -> bool:
+        try:
+            if (grid[cell.y + 1][cell.x].is_42 and grid[cell.y - 1][cell.x].is_42):
+                return False
+        except IndexError:
+            return cell.top + cell.right + cell.bottom + cell.left == 3
         return cell.top + cell.right + cell.bottom + cell.left == 3
-        
 
     def find_dead_ends(self, grid: list[list[Cell]]) -> list[Cell]:
         dead_ends: list[Cell] = []
         for y in range(len(grid)):
             for x in range(len(grid[0])):
-                if self.is_dead_end(grid[y][x]):
+                if self.is_dead_end(grid[y][x], grid):
                     dead_ends.append(grid[y][x])
         return dead_ends
 
+
+    def find_open_spaces(self, grid: list[list[Cell]]):
+        for y in range(len(grid)):
+            for x in range(len(grid[y])):
+                if not grid[y][x].top and not grid[y][x].bottom and not grid[y][x].left and not grid[y][x].right:
+                    print(True)
+                    if grid[y - 1][x - 1].right or grid[y - 1][x - 1].bottom:
+                        continue
+                    if grid[y - 1][x + 1].left or grid[y - 1][x + 1].bottom:
+                        continue
+                    if grid[y + 1][x - 1].right or grid[y + 1][x - 1].top:
+                        continue
+                    if grid[y + 1][x + 1].left or grid[y + 1][x + 1].top:
+                        continue
+                    grid[y][x].top = 1
+                    grid[y - 1][x].bottom = 1
+                    return True
+        return False
+
     def imperfect_maze(self, grid: list[list[Cell]]) -> None:
-        removed_walls = 0
         while True:
             dead_ends = self.find_dead_ends(grid)
-            if (len(dead_ends) <= 2 and removed_walls > 2) or not dead_ends:
+            if len(dead_ends) == 0:
+                if self.find_open_spaces(grid):
+                    continue
+                break
+            # if (len(dead_ends) <= 2 and removed_walls > 2) or not dead_ends:
+            #     break
+            if not dead_ends:
                 break
             cell = random.choice(dead_ends)
             neighbours = self.find_walled_neighbours(grid, cell)
@@ -139,7 +167,6 @@ class MazeGenerator():
                 continue
             direction = random.choice(list(neighbours))
             self.break_wall(cell, neighbours[direction], direction)
-            removed_walls += 1
 
 
 
