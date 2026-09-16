@@ -4,25 +4,27 @@ from blessed import Terminal
 
 EMOJI_THEMES = {
     "tree_garden": {
-        "wall": lambda t: t.on_lightgreen('🌳'),
-        "path": lambda t: t.on_lightgreen('  '),
+        "wall": lambda t: t.on_green('🌳'),
+        "path": lambda t: t.on_green('🏾'),
         "start": lambda t: t.on_yellow('🚩'),
         "exit": lambda t: t.on_red('🏁'),
         "solution_path": lambda t: t.on_lightgreen('🐾'),
-        "pattern_42": lambda t: t.blink('💠')
+        "pattern_42": lambda t: t.blink_on_green('🌸')
     },
     "snowman": {
-        "wall": lambda t: t.on_lightblue('🧸ྀི'),
-        "path": lambda t: t.on_lightblue('  '),
-        "start": lambda t: t.bold_black_on_yellow('⛇ '),
-        "exit": lambda t: t.bold_white_on_red('❄️ '),
-        "pattern_42": lambda t: t.on_orange('🧱')
+        "wall": lambda t: t.on_darkblue('☃️ '),
+        "path": lambda t: t.on_darkblue('  '),
+        "start": lambda t: t.bold_black_on_blue('❄️ '),
+        "exit": lambda t: t.bold_white_on_lightblue('🗻'),
+        "solution_path": lambda t: t.on_darkblue('🧊'),
+        "pattern_42": lambda t: t.on_darkblue('🥶')
     },
     "beach": {
         "wall": lambda t: t.on_lightyellow('🌴'),
         "path": lambda t: t.on_brown('🏻'),
         "start": lambda t: t.bold_black_on_yellow('𖠋 '),
         "exit": lambda t: t.bold_white_on_red('🏆'),
+        "solution_path": lambda t: t.on_lightgreen('🐾'),
         "pattern_42": lambda t: t.on_orange('🧱')
     },
     "christmas": {
@@ -30,14 +32,16 @@ EMOJI_THEMES = {
         "path": lambda t: t.on_lightblue('⬜'),
         "start": lambda t: t.on_blue('🎅'),
         "exit": lambda t: t.bold_white_on_red('🎁'),
+        "solution_path": lambda t: t.on_lightgreen('🐾'),
         "pattern_42": lambda t: t.on_orange('🧱')
     },
     "halloween": {
-        "wall": lambda t: t.on_orange('🍁'),  # 🧱
-        "path": lambda t: t.on_orange('  '),
-        "start": lambda t: t.bold_black_on_yellow('🎅'),
-        "exit": lambda t: t.bold_white_on_red('🎁'),
-        "pattern_42": lambda t: t.on_orange('🧱')
+        "wall": lambda t: t.on_black('💀'),  # 🧱☠️💀⚰🦴🧟🥀🩸
+        "path": lambda t: t.on_black('  '),
+        "start": lambda t: t.bold_black_on_white('🏰'),
+        "exit": lambda t: t.bold_white_on_red('🧟'),
+        "solution_path": lambda t: t.on_black('🦇'),
+        "pattern_42": lambda t: t.on_black('🥀')
     },
 }
 
@@ -48,7 +52,7 @@ LINE_THEMES = {
         "start": lambda t: t.bold_black_on_yellow(' S'),
         "exit": lambda t: t.bold_white_on_red(' E'),
         "solution_path": lambda t: t.white_on_black('○'),
-        "pattern_42": lambda t: t.on_orange('  ')
+        "pattern_42": lambda t: t.blink_bold_yellow_on_purple('██')
     },
     "cyber_blue": {
         "wall": lambda t: t.on_blue('▓▓'),
@@ -62,6 +66,7 @@ LINE_THEMES = {
         "path": lambda t: '  ',
         "start": lambda t: t.bold_black_on_yellow(' S'),
         "exit": lambda t: t.bold_white_on_red(' E'),
+        "solution_path": lambda t: t.white_on_black('○'),
         "pattern_42": lambda t: t.on_orange('  ')
     }
 }
@@ -83,4 +88,4 @@ def get_tile(
     return tile_formatter(term)
 
 # ▒ ▒. ▓▓, █,
-# 🏠
+# 🏠 🌼 🍄
