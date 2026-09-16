@@ -82,23 +82,38 @@ def draw_maze_lines(
     """
     wall_tile = get_tile(term, "wall", theme_name, mode="line")
     path_tile = get_tile(term, "path", theme_name, mode="line")
+    pattern_42_tile = get_tile(term, "pattern_42", theme_name, mode="line")
+
     for y, row in enumerate(grid):
         top_line = wall_tile
         mid_line = wall_tile
 
-        for cell in row:
-            top_wall = wall_tile if cell.top else path_tile
-            top_line += top_wall + wall_tile
+        for x, cell in enumerate(row):
+            is_42 = getattr(cell, 'is_42', False)
+            top_is_42 = y > 0 and getattr(grid[y - 1][x], 'is_42', False)
+            right_is_42 = x < len(grid) and getattr(
+                grid[y][x + 1], 'is_42', False)
+            if is_42 and top_is_42:
+                top_wall = pattern_42_tile
+            else:
+                top_wall = wall_tile if cell.top else path_tile
 
             # Cell and right wall
-            if cell.is_start(config):
+            if is_42:
+                tile = pattern_42_tile
+            elif cell.is_start(config):
                 tile = get_tile(term, "start", theme_name, mode="line")
             elif cell.is_exit(config):
                 tile = get_tile(term, "exit", theme_name, mode="line")
             else:
                 tile = path_tile
 
-            right_wall = wall_tile if cell.right else path_tile
+            if is_42 and right_is_42:
+                right_wall = pattern_42_tile
+            else:
+                right_wall = wall_tile if cell.right else path_tile
+
+            top_line += top_wall + wall_tile
             mid_line += tile + right_wall
 
         print(term.move_xy(0, y * 2) + top_line, flush=True)
@@ -114,13 +129,17 @@ def draw_maze_emojis(
         theme_name: str
 ):
     """Randering the grill extinded by emojis"""
+
+    pattern_42_tile = get_tile(term, "pattern_42", theme_name, mode="emoji")
+
     for y, row in enumerate(display_grid):
         tile = ""
         for char in row:
-            if char == 'W':
+            if char == '4':
+                tile += pattern_42_tile
+                # tile += get_tile(term, "pattern_42", theme_name, mode="emoji")
+            elif char == 'W':
                 tile += get_tile(term, "wall", theme_name, mode="emoji")
-            elif char == '4':
-                tile += get_tile(term, "pattern_42", theme_name, mode="emoji")
             elif char == 'S':
                 tile += get_tile(term, "start", theme_name, mode="emoji")
             elif char == 'E':
