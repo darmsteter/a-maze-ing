@@ -19,14 +19,24 @@ def parse_path_to_coords(
     return coords
 
 
+# def get_solution_coords(
+#         config: Config,
+#         grid: list[list[Cell]]
+# ) -> list[tuple[int, int]]:
+#     entry_pos = (int(config.entry.y), int(config.entry.x))
+#     exit_pos = (int(config.exit.y), int(config.exit.x))
+#     solution_str = find_path(exit_pos, entry_pos, grid)
+#     if solution_str:
+#         start_pos = (int(config.entry.y), int(config.entry.x))
+#         return parse_path_to_coords(start_pos, solution_str)
+#     return []
+
+
 def get_solution_coords(
         config: Config,
-        grid: list[list[Cell]]
+        solution_str: str
 ) -> list[tuple[int, int]]:
-    entry_pos = (int(config.entry.x), int(config.entry.y))
-    exit_pos = (int(config.exit.x), int(config.exit.y))
-    solution_str = find_path(exit_pos, entry_pos, grid)
     if solution_str:
-        start_pos = (int(config.entry.x), int(config.entry.y))
+        start_pos = (int(config.entry.y), int(config.entry.x))
         return parse_path_to_coords(start_pos, solution_str)
     return []

@@ -31,7 +31,6 @@ if __name__ == "__main__":
         grafic_initialization(
             config, grid, display_grid, theme_name="tree_garden", mode="emoji"
         )
-        # 
     except ConfigurationException as e:
         print(f"Configuration error: {e}")
         exit()

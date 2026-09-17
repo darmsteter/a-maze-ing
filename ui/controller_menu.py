@@ -84,14 +84,14 @@ def handle_input(
                 grid, path = generate_fn(config)
                 if mode == "emoji":
                     display_grid = to_display_grid_fn(
-                        grid,
-                        config.width,
-                        config.height,
-                        config
+                        new_grid,
+                        new_config.width,
+                        new_config.height,
+                        new_config
                     )
                 show_solution = False
                 refresh_ui_fn(
-                    grid, display_grid, theme_name,
+                    new_grid, display_grid, theme_name,
                     mode, show_solution, animate=False
                 )
 
