@@ -7,6 +7,12 @@ from maze.generate_maze import MazeGenerator
 
 
 if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print(
+            "Your program must be run with the following command: "
+            "python3 a_maze_ing.py file_name.txt"
+        )
+        exit()
     try:
         config = read_config_file(sys.argv[1])
         generator = MazeGenerator()
@@ -25,14 +31,7 @@ if __name__ == "__main__":
         grafic_initialization(
             config, grid, display_grid, theme_name="tree_garden", mode="emoji"
         )
-        # grid, path = generate_maze(config)
-        display_grid = to_display_grid(
-            grid, config.width, config.height, config
-        )
-        grafic_initialization(
-            config, grid, display_grid, theme_name="tree_garden", mode="emoji"
-        )
-
+        # 
     except ConfigurationException as e:
         print(f"Configuration error: {e}")
         exit()

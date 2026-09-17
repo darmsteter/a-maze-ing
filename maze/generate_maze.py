@@ -71,7 +71,6 @@ class MazeGenerator():
             self.imperfect_maze(grid)
         return grid, find_path(exit, entry, grid)
 
-
     def break_wall(self, current: Cell, neighbour: Cell, direction: Directions) -> None:
         match direction:
             case Directions.TOP:

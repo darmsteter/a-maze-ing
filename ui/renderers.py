@@ -137,7 +137,6 @@ def draw_maze_emojis(
         for char in row:
             if char == '4':
                 tile += pattern_42_tile
-                # tile += get_tile(term, "pattern_42", theme_name, mode="emoji")
             elif char == 'W':
                 tile += get_tile(term, "wall", theme_name, mode="emoji")
             elif char == 'S':
@@ -175,9 +174,10 @@ def render_all(
         draw_maze_lines(term, grid, config, theme_name)
         max_y = len(grid) * 2
 
-    draw_controller_menu(term, max_y, show_solution, theme_name, mode)
     if show_solution and solution_coords:
         draw_solution_str(
             term, solution_coords, grid, config, theme_name, mode=mode,
             animate=animate_path, delay=0.03
         )
+    draw_controller_menu(term, max_y, show_solution, theme_name, mode)
+

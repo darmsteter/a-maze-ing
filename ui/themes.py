@@ -87,8 +87,7 @@ LINE_THEMES = {
         "exit": lambda t: t.bold_yellow_on_red('E '),
         "solution_path": lambda t: t.on_lightyellow('★'),
         "pattern_42": lambda t: t.on_red('  ')
-    },
-    
+    }
 }
 # ▒ ▒. ▓▓, █,
 

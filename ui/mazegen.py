@@ -1,5 +1,6 @@
 from blessed import Terminal
 from config import Config
+from config.parser import read_config_file
 from maze.models import Cell
 from maze.generate_maze import MazeGenerator
 from ui.controller_menu import handle_input
@@ -34,16 +35,22 @@ def grafic_initialization(
             curr_sol, solution_coords, curr_disp, animate_path=animate
         )
 
-    def generate_run(config):
-        return generate.generate(
-            config.height,
-            config.width,
-            (config.entry.x, config.entry.y),
-            (config.exit.x, config.exit.y),
-            config.seed,
-            config.perfect,
-            config.algorithm
+    def generate_run(current_config: Config) -> tuple[list[list[Cell]], Config]:
+        try:
+            new_config = read_config_file("config_txt")
+        except Exception:
+            new_config = current_config
+
+        new_grid, _ = generate.generate(
+            new_config.height,
+            new_config.width,
+            (new_config.entry.x, config.entry.y),
+            (new_config.exit.x, config.exit.y),
+            new_config.seed,
+            new_config.perfect,
+            new_config.algorithm
         )
+        return new_grid, new_config
 
     with term.fullscreen(), term.cbreak(), term.hidden_cursor():
         refresh_ui(
