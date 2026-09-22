@@ -1,3 +1,4 @@
+import time
 from blessed import Terminal
 from typing import Any
 from config import Config
@@ -30,12 +31,28 @@ def grafic_initialization(
         "path": initial_path
     }
 
+    def step_callback(step_grid: list[list[Cell]]) -> None:
+        active_config = current_state["config"]
+        temp_display = to_display_grid(
+            step_grid, active_config.width, active_config.height, active_config
+        )
+        current_theme = current_state.get("theme_name", theme_name)
+        current_mode = current_state.get("mode", mode)
+        render_all(
+            term, active_config, step_grid, current_theme, current_mode,
+            False, [], temp_display, animate_path=False
+        )
+        time.sleep(0.05)
+
     def generate_run(
-            active_config: Config) -> tuple[list[list[Cell]], Config, str]:
+            active_config: Config,
+            animate: bool = False) -> tuple[list[list[Cell]], Config, str]:
         try:
             new_config = read_config_file(config_path)
         except Exception:
             new_config = active_config  # -> pop up message
+
+        cb = step_callback if animate else None
 
         new_grid, new_path = generate.generate(
             new_config.height,
@@ -44,11 +61,14 @@ def grafic_initialization(
             (new_config.exit.x, new_config.exit.y),
             new_config.seed,
             new_config.perfect,
-            new_config.algorithm
+            new_config.algorithm,
+            callback=cb
         )
+
         new_display_grid = to_display_grid(
             new_grid, new_config.width, new_config.height, new_config
         )
+
         current_state["config"] = new_config
         current_state["grid"] = new_grid
         current_state["display_grid"] = new_display_grid
@@ -65,6 +85,8 @@ def grafic_initialization(
             curr_path: str = "",
             animate: bool = False,
     ) -> None:
+        current_state["theme_name"] = curr_theme
+        current_state["mode"] = curr_mode
         path_to_use = curr_path if curr_path else current_state["path"]
 
         solution_coords = (

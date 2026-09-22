@@ -23,9 +23,11 @@ def check_terminal_size(
         required_h = grid_height + 2 + 5
 
     if term.width < required_w or term.height < required_h:
-        msg = "Enlarge the terminal to see the maze! Regenerate (R)"
+        msg = term.red_on_yellow(
+            "Enlarge the terminal to see the maze! Regenerate (R)"
+        )
         print(term.home + term.clear, end="", flush=True)
-        print(msg)
+        print(term.center(msg))
         return False
     return True
 
@@ -35,14 +37,17 @@ def draw_controller_menu(
     max_y: int,
     show_solution: bool,
     theme_name: str,
-    mode: str
+    mode: str,
+    animate: bool = False
 ):
     sol_status = term.green("ON") if show_solution else term.red("OFF")
+    animate_status = term.green("ON") if animate else term.red("OFF")
     controls_menu = (
         f" {term.bold_cyan('[R]')} Regenerate: | "
         f"{term.bold_cyan('[S]')} Solution: {sol_status} | "
         f"{term.bold_cyan('[T]')} Theme: {term.yellow(theme_name)} | "
         f"{term.bold_cyan('[M]')} Mode: {term.magenta(mode)} | "
+        f"{term.bold_cyan('[A]')} Animate: {animate_status} | "
         f"{term.bold_red('[Q/ESC]')} End game"
     )
     print(f"{term.move_xy(0, max_y + 1)} {controls_menu}", flush=True)
@@ -65,6 +70,7 @@ def handle_input(
         EMOJI_THEMES.keys())if mode == "emoji" else list(LINE_THEMES.keys())
     theme_index = available_themes.index(
             theme_name) if theme_name in available_themes else 0
+
     while True:
         try:
             key = term.inkey(timeout=0.1)
@@ -117,6 +123,17 @@ def handle_input(
                     display_grid = to_display_grid_fn(
                         grid, config.width, config.height, config
                     )
+                refresh_ui_fn(
+                    grid, display_grid, theme_name,
+                    mode, show_solution, curr_path=path, animate=False
+                )
+            elif key_code == 'a':
+                grid, config, path = generate_fn(config, animate=True)
+                if mode == "emoji":
+                    display_grid = to_display_grid_fn(
+                        grid, config.width, config.height, config
+                    )
+                show_solution = False
                 refresh_ui_fn(
                     grid, display_grid, theme_name,
                     mode, show_solution, curr_path=path, animate=False

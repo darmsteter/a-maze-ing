@@ -1,6 +1,6 @@
 import abc
 import random
-
+from typing import Any
 from errors import ConfigurationException
 
 from .find_path import find_path
@@ -50,7 +50,11 @@ class MazeGenerator():
                 grid[start_y + y][start_x + x].is_42 = True
                 self.marked_cells += 1
 
-    def generate(self, height: int, width: int, entry: tuple[int, int], exit: tuple[int, int], seed: int | None, perfect: bool, algorithm: str) -> tuple[list[list[Cell]], str]:
+    def generate(
+        self, height: int, width: int, entry: tuple[int, int],
+        exit: tuple[int, int], seed: int | None, perfect: bool,
+        algorithm: str, callback: Any = None
+    ) -> tuple[list[list[Cell]], str]:
         grid = self.create_grid(height, width)
         self.marked_cells = 0
         self.add_42(grid, entry, exit)
@@ -64,11 +68,12 @@ class MazeGenerator():
             cell.was_visited = True
             break
         if algorithm.lower() == 'prim':
-            self._generate_prim(grid, cell)
+            self._generate_prim(grid, cell, callback=callback)
         else:
-            self._generate_dfs(grid, cell)
+            self._generate_dfs(grid, cell, callback=callback)
         if perfect == "False":
             self.imperfect_maze(grid)
+
         return grid, find_path(exit, entry, grid)
 
     def break_wall(self, current: Cell, neighbour: Cell, direction: Directions) -> None:
@@ -182,8 +187,9 @@ class MazeGenerator():
             direction = random.choice(list(neighbours))
             self.break_wall(cell, neighbours[direction], direction)
 
-
-    def _generate_prim(self, grid: list[list[Cell]], cell: Cell) -> None:
+    def _generate_prim(
+        self, grid: list[list[Cell]], cell: Cell, callback: Any = None
+    ) -> None:
         frontier = list(
             self.find_neighbours(grid, cell, False).values()
         )
@@ -193,17 +199,23 @@ class MazeGenerator():
             direction = random.choice(list(visited_neighbours))
             self.break_wall(current_cell, visited_neighbours[direction], direction)
             frontier.remove(current_cell)
+            if callback:
+                callback(grid)
             grid[current_cell.y][current_cell.x].was_visited = True
             for value in self.find_neighbours(grid, current_cell, False).values():
                 if value not in frontier: 
                     frontier.append(value)
 
-
-    def _generate_dfs(self, grid: list[list[Cell]], cell: Cell) -> None: 
+    def _generate_dfs(
+        self, grid: list[list[Cell]], cell: Cell, callback: Any = None
+    ) -> None: 
         remaining_cells = len(grid) * len(grid[0]) - self.marked_cells
-        self.dfs_recursive(grid, remaining_cells, cell)
+        self.dfs_recursive(grid, remaining_cells, cell, callback)
 
-    def dfs_recursive(self, grid: list[list[Cell]], remaining_cells: int, cell: Cell) -> bool:
+    def dfs_recursive(
+        self, grid: list[list[Cell]], remaining_cells: int,
+        cell: Cell, callback: Any = None
+    ) -> bool:
         remaining_cells -= 1
         if remaining_cells == 0:
             return True
@@ -215,6 +227,8 @@ class MazeGenerator():
             next_cell = neighbours[direction]
             next_cell.was_visited = True
             self.break_wall(cell, next_cell, direction)
+            if callback:
+                callback(grid)
             if self.dfs_recursive(grid, remaining_cells, next_cell):
                 return True
             neighbours = self.find_neighbours(grid, cell, False)
