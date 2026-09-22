@@ -19,8 +19,8 @@ if __name__ == "__main__":
         grid, path = generator.generate(
             config.height,
             config.width,
-            (config.entry.y, config.entry.x),
-            (config.exit.y, config.exit.x),
+            (config.entry.x, config.entry.y),
+            (config.exit.x, config.exit.y),
             config.seed,
             config.perfect,
             config.algorithm

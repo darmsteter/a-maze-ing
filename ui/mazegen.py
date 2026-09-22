@@ -46,8 +46,12 @@ def grafic_initialization(
             new_config.perfect,
             new_config.algorithm
         )
+        new_display_grid = to_display_grid(
+            new_grid, new_config.width, new_config.height, new_config
+        )
         current_state["config"] = new_config
         current_state["grid"] = new_grid
+        current_state["display_grid"] = new_display_grid
         current_state["path"] = new_path
 
         return new_grid, new_config, new_path
