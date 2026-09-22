@@ -44,7 +44,7 @@ def draw_solution_str(
         return
 
     sol_tile = get_tile(term, "solution_path", theme_name, mode=mode)
-    start = int(config.entry.y), int(config.entry.x)
+    start = int(config.entry.x), int(config.entry.y)
     full_path = [start] + path
 
     def draw_step(x: int, y: int) -> None:
@@ -91,8 +91,9 @@ def draw_maze_lines(
         for x, cell in enumerate(row):
             is_42 = getattr(cell, 'is_42', False)
             top_is_42 = y > 0 and getattr(grid[y - 1][x], 'is_42', False)
-            right_is_42 = x < len(grid) - 1 and getattr(
-                grid[y][x + 1], 'is_42', False)
+            right_is_42 = x < len(row) - 1 and getattr(
+                grid[y][x + 1], 'is_42', False
+            )
             if is_42 and top_is_42:
                 top_wall = pattern_42_tile
             else:
@@ -180,4 +181,3 @@ def render_all(
             animate=animate_path, delay=0.03
         )
     draw_controller_menu(term, max_y, show_solution, theme_name, mode)
-

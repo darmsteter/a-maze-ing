@@ -19,8 +19,8 @@ if __name__ == "__main__":
         grid, path = generator.generate(
             config.height,
             config.width,
-            (config.entry.x, config.entry.y),
-            (config.exit.x, config.exit.y),
+            (config.entry.y, config.entry.x),
+            (config.exit.y, config.exit.x),
             config.seed,
             config.perfect,
             config.algorithm
@@ -29,11 +29,12 @@ if __name__ == "__main__":
             grid, config.width, config.height, config
         )
         grafic_initialization(
-            config, grid, display_grid, theme_name="tree_garden", mode="emoji"
+            config, grid, display_grid,
+            initial_path=path, theme_name="tree_garden", mode="emoji"
         )
     except ConfigurationException as e:
         print(f"Configuration error: {e}")
         exit()
 
 
-# tree -I '__pycache__|.mypy_cache|env|.git' --> to tree ignore
+# tree -I '__pycache__|.mypy_cache|env|.git' --> to tree ignore 

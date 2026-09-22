@@ -25,7 +25,7 @@ def check_terminal_size(
     if term.width < required_w or term.height < required_h:
         msg = "Enlarge the terminal to see the maze! Regenerate (R)"
         print(term.home + term.clear, end="", flush=True)
-        print(term.move_xy(0, 0) + term.black_on_yellow(msg), flush=True)
+        print(msg)
         return False
     return True
 
@@ -58,7 +58,8 @@ def handle_input(
     show_solution: bool,
     generate_fn,
     refresh_ui_fn,
-    to_display_grid_fn
+    to_display_grid_fn,
+    path: str = ""
 ):
     available_themes = list(
         EMOJI_THEMES.keys())if mode == "emoji" else list(LINE_THEMES.keys())
@@ -78,38 +79,32 @@ def handle_input(
             elif key_code == 'KEY_RESIZE':
                 refresh_ui_fn(
                     grid, display_grid, theme_name,
-                    mode, show_solution, animate=False
-                    )
+                    mode, show_solution, curr_path=path, animate=False
+                )
             elif key_code == 'r':
-                grid, path = generate_fn(config)
+                grid, config, path = generate_fn(config)
                 if mode == "emoji":
                     display_grid = to_display_grid_fn(
-                        new_grid,
-                        new_config.width,
-                        new_config.height,
-                        new_config
+                        grid, config.width, config.height, config
                     )
                 show_solution = False
                 refresh_ui_fn(
-                    new_grid, display_grid, theme_name,
-                    mode, show_solution, animate=False
+                    grid, display_grid, theme_name,
+                    mode, show_solution, curr_path=path, animate=False
                 )
-
             elif key_code == 's':
                 show_solution = not show_solution
                 refresh_ui_fn(
                     grid, display_grid, theme_name,
-                    mode, show_solution, animate=show_solution
+                    mode, show_solution, curr_path=path, animate=show_solution
                 )
-
             elif key_code == 't':
                 theme_index = (theme_index + 1) % len(available_themes)
                 theme_name = available_themes[theme_index]
                 refresh_ui_fn(
                     grid, display_grid, theme_name,
-                    mode, show_solution, animate=False
+                    mode, show_solution, curr_path=path, animate=False
                 )
-
             elif key_code == 'm':
                 mode = "line" if mode == "emoji" else "emoji"
                 available_themes = list(EMOJI_THEMES.keys(
@@ -124,7 +119,7 @@ def handle_input(
                     )
                 refresh_ui_fn(
                     grid, display_grid, theme_name,
-                    mode, show_solution, animate=False
+                    mode, show_solution, curr_path=path, animate=False
                 )
         except KeyboardInterrupt:
             pass
