@@ -1,13 +1,13 @@
-import time
 from blessed import Terminal
 from typing import Any
 from config import Config
 from config.parser import read_config_file
+from errors import ActionInterrupted, ConfigurationException
 from maze.models import Cell
 from maze.generate_maze import MazeGenerator
 from ui.controller_menu import handle_input
 from .grid_converter import to_display_grid
-from ui.renderers import render_all
+from ui.renderers import render_all, draw_error_popup
 from ui.solution import get_solution_coords
 
 
@@ -43,28 +43,51 @@ def grafic_initialization(
             show_solution=False, solution_coords=[], display_grid=temp_display,
             animate_path=False
         )
-        time.sleep(0.02)
+        key = term.inkey(timeout=0.02)
+        allowed_keys = {'a', 'q', 'r', 's', 't', 'm',
+                        'KEY_RESIZE', 'KEY_ESCAPE'}
+        if key:
+            key_code = key.name if key.is_sequence else key.lower()
+            if key_code in allowed_keys:
+                raise ActionInterrupted(key_code)
 
     def generate_run(
-            active_config: Config,
-            animate: bool = False) -> tuple[list[list[Cell]], Config, str]:
-        try:
-            new_config = read_config_file(config_path)
-        except Exception:
-            new_config = active_config  # -> pop up message
+        active_config: Config,
+        animate: bool = False,
+        reuse_current: bool = False
+    ) -> tuple[list[list[Cell]], Config, str]:
+        while True:
+            try:
+                if reuse_current:
+                    new_config = active_config
+                else:
+                    new_config = read_config_file(config_path)
 
-        cb = step_callback if animate else None
+                cb = step_callback if animate else None
+                current_seed = active_config.seed if reuse_current else new_config.seed
 
-        new_grid, new_path = generate.generate(
-            new_config.height,
-            new_config.width,
-            (new_config.entry.x, new_config.entry.y),
-            (new_config.exit.x, new_config.exit.y),
-            new_config.seed,
-            new_config.perfect,
-            new_config.algorithm,
-            callback=cb
-        )
+                new_grid, new_path = generate.generate(
+                    new_config.height,
+                    new_config.width,
+                    (new_config.entry.x, new_config.entry.y),
+                    (new_config.exit.x, new_config.exit.y),
+                    new_config.seed,
+                    new_config.perfect,
+                    new_config.algorithm,
+                    callback=cb
+                )
+                break
+            except ConfigurationException as e:
+                draw_error_popup(term, str(e))
+                while True:
+                    key = term.inkey(timeout=0.1)
+                    if not key:
+                        continue
+                    key_code = key.name if key.is_sequence else key.lower()
+                    if key_code in ('q', 'KEY_ESCAPE'):
+                        raise SystemExit(0)
+                    if key_code == 'r':
+                        break
 
         new_display_grid = to_display_grid(
             new_grid, new_config.width, new_config.height, new_config
@@ -99,7 +122,7 @@ def grafic_initialization(
             curr_sol, solution_coords, curr_disp, animate_path=animate
         )
 
-    with term.fullscreen(), term.cbreak(), term.hidden_cursor():
+    with term.fullscreen(), term.raw(), term.hidden_cursor():
         refresh_ui(
             grid, display_grid, theme_name, mode, show_solution,
             curr_path=initial_path, animate=False

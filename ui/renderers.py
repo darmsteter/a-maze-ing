@@ -1,8 +1,9 @@
-import time
+import textwrap
 from blessed import Terminal
 from config import Config
 from maze.models import Cell
 from ui.controller_menu import check_terminal_size, draw_controller_menu
+from errors import ActionInterrupted
 from ui.themes import get_tile
 
 
@@ -22,7 +23,7 @@ def draw_maze_frame_and_title(
     title_x = offset_x + max(1, (frame_w - len(title)) // 2)
     print(term.move_xy(offset_x, offset_y + 1)
           + term.bold_dim_green("║"), flush=True)
-    print(term.move_xy(title_x, offset_y + 1) 
+    print(term.move_xy(title_x, offset_y + 1)
           + term.bold_cyan(title), flush=True)
     print(term.move_xy(offset_x + frame_w - 1, offset_y + 1)
           + term.bold_dim_green("║"), flush=True)
@@ -36,7 +37,7 @@ def draw_maze_frame_and_title(
               + term.bold_dim_green("║"), flush=True)
         print(term.move_xy(offset_x + frame_w - 1, offset_y + y)
               + term.bold_dim_green("║"), flush=True)
-    
+
     menu_bdr = term.bold("╠") + term.bold("═") * (frame_w - 2) + term.bold("╣")
     print(term.move_xy(offset_x, offset_y + frame_h - 3)
           + term.bold_dim_green(menu_bdr), flush=True)
@@ -82,51 +83,6 @@ def render_frame(
     maze_y = offset_y + 3
 
     return maze_x, maze_y, inner_h, frame_w, offset_x, offset_y
-
-
-def draw_solution_str(
-    term: Terminal,
-    path: list[tuple[int, int]],
-    grid: list[list[Cell]],
-    config: Config,
-    theme_name: str,
-    mode: str,
-    offset_x: int = 0,
-    offset_y: int = 0,
-    animate: bool = False,
-    delay: float = 0.05
-):
-    if not path:
-        return
-
-    sol_tile = get_tile(term, "solution_path", theme_name, mode=mode)
-    start = int(config.entry.x), int(config.entry.y)
-    full_path = [start] + path
-
-    def draw_step(x: int, y: int) -> None:
-        print(term.move_xy(
-            offset_x + x * 2, offset_y + y) + sol_tile, flush=True
-        )
-        if animate:
-            time.sleep(delay)
-
-    for i in range(1, len(full_path)):
-        prev_x, prev_y = full_path[i - 1]
-        curr_x, curr_y = full_path[i]
-
-        # Extended coordinates for the previous and current cell
-        p_x, p_y = prev_x * 2 + 1, prev_y * 2 + 1
-        c_x, c_y = curr_x * 2 + 1, curr_y * 2 + 1
-
-        # We calculate the position of the broken wall.
-        mid_x = (p_x + c_x) // 2
-        mid_y = (p_y + c_y) // 2
-        # We draw the intermediate corridor
-        draw_step(mid_x, mid_y)
-
-        # We draw the current cell (if we haven't reached the exit).
-        if not grid[curr_y][curr_x].is_exit(config):
-            draw_step(c_x, c_y)
 
 
 def draw_maze_lines(
@@ -214,6 +170,102 @@ def draw_maze_emojis(
                 tile += get_tile(term, "path", theme_name, mode="emoji")
 
         print(term.move_xy(offset_x, offset_y + y) + tile, flush=True)
+
+
+def draw_solution_str(
+    term: Terminal,
+    path: list[tuple[int, int]],
+    grid: list[list[Cell]],
+    config: Config,
+    theme_name: str,
+    mode: str,
+    offset_x: int = 0,
+    offset_y: int = 0,
+    animate: bool = False,
+    delay: float = 0.05
+):
+    if not path:
+        return
+
+    sol_tile = get_tile(term, "solution_path", theme_name, mode=mode)
+    start = int(config.entry.x), int(config.entry.y)
+    full_path = [start] + path
+
+    allowed_keys = {'a', 'q', 'r', 's', 't', 'm', 'KEY_RESIZE', 'KEY_ESCAPE'}
+
+    def draw_step(x: int, y: int) -> None:
+        print(term.move_xy(
+            offset_x + x * 2, offset_y + y) + sol_tile, flush=True
+        )
+        if animate:
+            key = term.inkey(timeout=delay)
+            if key:
+                key_code = key.name if key.is_sequence else key.lower()
+                if key_code in allowed_keys:
+                    raise ActionInterrupted(key_code)
+
+    for i in range(1, len(full_path)):
+        prev_x, prev_y = full_path[i - 1]
+        curr_x, curr_y = full_path[i]
+
+        # Extended coordinates for the previous and current cell
+        p_x, p_y = prev_x * 2 + 1, prev_y * 2 + 1
+        c_x, c_y = curr_x * 2 + 1, curr_y * 2 + 1
+
+        # We calculate the position of the broken wall.
+        mid_x = (p_x + c_x) // 2
+        mid_y = (p_y + c_y) // 2
+        # We draw the intermediate corridor
+        draw_step(mid_x, mid_y)
+
+        # We draw the current cell (if we haven't reached the exit).
+        if not grid[curr_y][curr_x].is_exit(config):
+            draw_step(c_x, c_y)
+
+
+def draw_error_popup(term: Terminal, error_msg: str) -> None:
+    popup_w = 64
+    popup_h = 9
+
+    start_x = (term.width - popup_w) // 2
+    start_y = (term.height - popup_h) // 2
+
+    border_color = term.bold_white
+    bg_color = term.on_red
+    text_color = term.bold_darkblue
+
+    for i in range(popup_h):
+        print(term.move_xy(start_x, start_y + i)
+              + bg_color(" " * popup_w), end="", flush=True)
+
+    top_border = border_color("╔" + "═" * (popup_w - 2) + "╗")
+    print(term.move_xy(start_x, start_y) + bg_color(top_border), flush=True)
+
+    for i in range(1, popup_h - 1):
+        middle_line = border_color("║" + " " * (popup_w - 2))
+        print(term.move_xy(start_x, start_y + i) 
+              + bg_color(middle_line), end="", flush=True)
+
+    bottom_border = border_color("╚" + "═" * (popup_w - 2) + "╝")
+    print(term.move_xy(start_x, start_y + popup_h - 1)
+          + bg_color(bottom_border), flush=True)
+
+    title_raw = " CONFIGURATION ERROR "
+    title = f"{term.bold_white(title_raw)} "
+    title_x = start_x + (popup_w - len(title_raw)) // 2
+    print(term.move_xy(title_x, start_y) + title, flush=True)
+
+    wrapped_lines = textwrap.wrap(error_msg, width=popup_w - 6)
+    for idx, line in enumerate(wrapped_lines[:4]):
+        line_x = start_x + (popup_w - len(line)) // 2
+        print(term.move_xy(line_x, start_y + 2 + idx)
+              + bg_color(text_color(line)), flush=True)
+
+    prompt_raw = " Adjust config.txt and regenerate [R] "
+    prompt = term.bold_darkblue(prompt_raw)
+    prompt_x = start_x + (popup_w - len(term.strip_seqs(prompt))) // 2
+    print(term.move_xy(prompt_x, start_y + popup_h - 2)
+          + bg_color(prompt), flush=True)
 
 
 def render_all(

@@ -1,5 +1,6 @@
 from blessed import Terminal
 from config.models import Config
+from errors import ActionInterrupted
 from maze.models import Cell
 from ui.themes import EMOJI_THEMES, LINE_THEMES
 
@@ -32,7 +33,6 @@ def check_terminal_size(
         print(term.move_xy(
             max(0, (term.width - len(term.strip_seqs(msg))) // 2),
             term.height // 2) + msg, flush=True)
-        # print(term.center(msg))
         return False
     return True
 
@@ -53,10 +53,10 @@ def draw_controller_menu(
         f"{term.bold_yellow('[T]')} Theme: {term.yellow(theme_name)} | "
         f"{term.bold_orange('[M]')} Mode: {term.magenta(mode)} | "
         f"{term.bold_pink('[A]')} Live Gen | "
-        f"{term.bold_red('[Q/ESC]')} Exit"
+        f"{term.bold_red('[Q/ESC]')} ESC"
     )
+    visible_len = len(term.strip_seqs(controls_menu))
     if frame_w > 0:
-        visible_len = len(term.strip_seqs(controls_menu))
         draw_x = x + max(1, (frame_w - visible_len) // 2)
     else:
         draw_x = x
@@ -77,18 +77,26 @@ def handle_input(
     to_display_grid_fn,
     path: str = ""
 ):
+    ALLOWED_KEYS = {'a', 'q', 'r', 's', 't', 'm', 'KEY_RESIZE', 'KEY_ESCAPE'}
     available_themes = list(
         EMOJI_THEMES.keys())if mode == "emoji" else list(LINE_THEMES.keys())
     theme_index = available_themes.index(
-            theme_name) if theme_name in available_themes else 0
+        theme_name) if theme_name in available_themes else 0
+    next_key: str = ""
 
     while True:
         try:
-            key = term.inkey(timeout=0.1)
-            if not key:
+            if next_key:
+                key_code = next_key
+                next_key = ""
+            else:
+                key = term.inkey(timeout=0.1)
+                if not key:
+                    continue
+                key_name = key.name if key.is_sequence else None
+                key_code = key_name if key_name is not None else key.lower()
+            if key_code not in ALLOWED_KEYS:
                 continue
-
-            key_code = key.name if key.is_sequence else key.lower()
 
             if key_code == 'KEY_ESCAPE' or key_code == 'q':
                 break
@@ -139,7 +147,9 @@ def handle_input(
                     mode, show_solution, curr_path=path, animate=False
                 )
             elif key_code == 'a':
-                grid, config, path = generate_fn(config, animate=True)
+                grid, config, path = generate_fn(
+                    config, animate=True, reuse_current=True
+                )
                 if mode == "emoji":
                     display_grid = to_display_grid_fn(
                         grid, config.width, config.height, config
@@ -149,5 +159,5 @@ def handle_input(
                     grid, display_grid, theme_name,
                     mode, show_solution, curr_path=path, animate=False
                 )
-        except KeyboardInterrupt:
-            pass
+        except ActionInterrupted as e:
+            next_key = e.key_code
