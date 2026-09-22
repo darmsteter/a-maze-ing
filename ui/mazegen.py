@@ -40,9 +40,10 @@ def grafic_initialization(
         current_mode = current_state.get("mode", mode)
         render_all(
             term, active_config, step_grid, current_theme, current_mode,
-            False, [], temp_display, animate_path=False
+            show_solution=False, solution_coords=[], display_grid=temp_display,
+            animate_path=False
         )
-        time.sleep(0.05)
+        time.sleep(0.02)
 
     def generate_run(
             active_config: Config,

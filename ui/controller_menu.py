@@ -14,43 +14,54 @@ def check_terminal_size(
     Ensuring that the terminal is large enough to accommodate our maze.
     """
     if mode == 'emoji' and display_grid:
-        required_w = len(display_grid[0]) * 2
-        required_h = len(display_grid) + 2
+        inner_w = len(display_grid[0]) * 2
+        inner_h = len(display_grid)
     else:
         grid_width = len(grid[0]) if grid else 0
         grid_height = len(grid) if grid else 0
-        required_w = grid_width * 2 + 1
-        required_h = grid_height + 2 + 5
+        inner_w = (grid_width * 2 + 1) * 2
+        inner_h = grid_height * 2 + 1
 
+    required_w = max(inner_w + 4, 99)
+    required_h = inner_h + 7
     if term.width < required_w or term.height < required_h:
         msg = term.red_on_yellow(
             "Enlarge the terminal to see the maze! Regenerate (R)"
         )
         print(term.home + term.clear, end="", flush=True)
-        print(term.center(msg))
+        print(term.move_xy(
+            max(0, (term.width - len(term.strip_seqs(msg))) // 2),
+            term.height // 2) + msg, flush=True)
+        # print(term.center(msg))
         return False
     return True
 
 
 def draw_controller_menu(
     term: Terminal,
-    max_y: int,
+    x: int,
+    y: int,
     show_solution: bool,
     theme_name: str,
     mode: str,
-    animate: bool = False
+    frame_w: int = 0,
 ):
     sol_status = term.green("ON") if show_solution else term.red("OFF")
-    animate_status = term.green("ON") if animate else term.red("OFF")
     controls_menu = (
-        f" {term.bold_cyan('[R]')} Regenerate: | "
-        f"{term.bold_cyan('[S]')} Solution: {sol_status} | "
-        f"{term.bold_cyan('[T]')} Theme: {term.yellow(theme_name)} | "
-        f"{term.bold_cyan('[M]')} Mode: {term.magenta(mode)} | "
-        f"{term.bold_cyan('[A]')} Animate: {animate_status} | "
-        f"{term.bold_red('[Q/ESC]')} End game"
+        f" {term.bold_yellow('[R]')} Reg: | "
+        f"{term.bold_yellow('[S]')} Sol: {sol_status} | "
+        f"{term.bold_yellow('[T]')} Theme: {term.yellow(theme_name)} | "
+        f"{term.bold_orange('[M]')} Mode: {term.magenta(mode)} | "
+        f"{term.bold_pink('[A]')} Live Gen | "
+        f"{term.bold_red('[Q/ESC]')} Exit"
     )
-    print(f"{term.move_xy(0, max_y + 1)} {controls_menu}", flush=True)
+    if frame_w > 0:
+        visible_len = len(term.strip_seqs(controls_menu))
+        draw_x = x + max(1, (frame_w - visible_len) // 2)
+    else:
+        draw_x = x
+
+    print(f"{term.move_xy(draw_x, y)} {controls_menu}", flush=True)
 
 
 def handle_input(
