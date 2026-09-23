@@ -107,6 +107,7 @@ def handle_input(
                     mode, show_solution, curr_path=path, animate=False
                 )
             elif key_code == 'r':
+                print(str(term.home) + str(term.clear), end="", flush=True)
                 grid, config, path = generate_fn(config)
                 if mode == "emoji":
                     display_grid = to_display_grid_fn(

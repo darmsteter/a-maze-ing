@@ -10,7 +10,3 @@ class ConfigurationException(Exception):
 class ActionInterrupted(Exception):
     def __init__(self, key_code: str):
         self.key_code = key_code
-
-
-class InvalidConfigError(Exception):
-    pass
