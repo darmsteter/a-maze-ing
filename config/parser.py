@@ -79,33 +79,33 @@ def validate_required_keys(values: dict[ConfigKey, str]) -> None:
         )
 
 
-def validate_bounds(config: Config) -> None:
-    if config.width < 5 or config.height < 5:
-        raise ConfigurationException(
-            f"Maze dimensions too small ({config.width}x{config.height}).\n"
-            "Minimum allowed is 5x5!"
-        )
-    if config.width > 25 or config.height > 25:
-        raise ConfigurationException(
-            f"Maze dimensions too large ({config.width}x{config.height}).\n"
-            "Maximum allowed is 25x25!"
-        )
-    if not (0 <= config.entry.x < config.width
-            and 0 <= config.entry.y < config.height):
-        raise ConfigurationException(
-            f"ENTRY coordinates ({config.entry.x}x{config.entry.y})\n"
-            f"are out of bounds for maze size {config.width}x{config.height}"
-        )
-    if not (0 <= config.exit.x < config.width
-            and 0 <= config.exit.y < config.height):
-        raise ConfigurationException(
-            f"EXIT coordinates ({config.exit.x}x{config.exit.y})\n"
-            f"are out of bounds for maze size {config.width}x{config.height}"
-        )
-    if config.entry.x == config.exit.x and config.entry.y == config.exit.y:
-        raise ConfigurationException(
-            "ENTRY and EXIT coordinates cannot be identical"
-        )
+# def validate_bounds(config: Config) -> None:
+#     # if config.width < 5 or config.height < 5:
+#     #     raise ConfigurationException(
+#     #         f"Maze dimensions too small ({config.width}x{config.height}).\n"
+#     #         "Minimum allowed is 5x5!"
+#     #     )
+#     if config.width > 25 or config.height > 25:
+#         raise ConfigurationException(
+#             f"Maze dimensions too large ({config.width}x{config.height}).\n"
+#             "Maximum allowed is 25x25!"
+#         )
+#     if not (0 <= config.entry.x < config.width
+#             and 0 <= config.entry.y < config.height):
+#         raise ConfigurationException(
+#             f"ENTRY coordinates ({config.entry.x}x{config.entry.y})\n"
+#             f"are out of bounds for maze size {config.width}x{config.height}"
+#         )
+#     if not (0 <= config.exit.x < config.width
+#             and 0 <= config.exit.y < config.height):
+#         raise ConfigurationException(
+#             f"EXIT coordinates ({config.exit.x}x{config.exit.y})\n"
+#             f"are out of bounds for maze size {config.width}x{config.height}"
+#         )
+#     if config.entry.x == config.exit.x and config.entry.y == config.exit.y:
+#         raise ConfigurationException(
+#             "ENTRY and EXIT coordinates cannot be identical"
+#         )
 
 
 def build_config(values: dict[ConfigKey, str]) -> Config:
@@ -143,7 +143,7 @@ def build_config(values: dict[ConfigKey, str]) -> Config:
                 for error in error_dict
             ])
         raise ConfigurationException(error_message)
-    validate_bounds(config)
+    # validate_bounds(config)
     return config
 
 

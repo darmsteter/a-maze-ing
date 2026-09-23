@@ -1,7 +1,8 @@
 from blessed import Terminal
 from config.models import Config
-from errors import ActionInterrupted
+from errors import ActionInterrupted, ConfigurationException
 from maze.models import Cell
+
 from ui.themes import EMOJI_THEMES, LINE_THEMES
 
 
@@ -44,7 +45,7 @@ def draw_controller_menu(
     show_solution: bool,
     theme_name: str,
     mode: str,
-    frame_w: int = 0,
+    frame_w: int = 0
 ):
     sol_status = term.green("ON") if show_solution else term.red("OFF")
     controls_menu = (
@@ -77,6 +78,7 @@ def handle_input(
     to_display_grid_fn,
     path: str = ""
 ):
+    from ui.renderers import get_error_popup
     ALLOWED_KEYS = {'a', 'q', 'r', 's', 't', 'm', 'KEY_RESIZE', 'KEY_ESCAPE'}
     available_themes = list(
         EMOJI_THEMES.keys())if mode == "emoji" else list(LINE_THEMES.keys())
@@ -108,16 +110,19 @@ def handle_input(
                 )
             elif key_code == 'r':
                 print(str(term.home) + str(term.clear), end="", flush=True)
-                grid, config, path = generate_fn(config)
-                if mode == "emoji":
-                    display_grid = to_display_grid_fn(
-                        grid, config.width, config.height, config
+                try:
+                    grid, config, path = generate_fn(config)
+                    if mode == "emoji":
+                        display_grid = to_display_grid_fn(
+                            grid, config.width, config.height, config
+                        )
+                    show_solution = False
+                    refresh_ui_fn(
+                        grid, display_grid, theme_name,
+                        mode, show_solution, curr_path=path, animate=False
                     )
-                show_solution = False
-                refresh_ui_fn(
-                    grid, display_grid, theme_name,
-                    mode, show_solution, curr_path=path, animate=False
-                )
+                except ConfigurationException as e:
+                    get_error_popup(term, str(e))
             elif key_code == 's':
                 show_solution = not show_solution
                 refresh_ui_fn(

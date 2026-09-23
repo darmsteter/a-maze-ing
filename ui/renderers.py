@@ -8,49 +8,49 @@ from ui.themes import get_tile
 
 
 def get_maze_frame_and_title(
-        term: Terminal,
-        frame_w: int,
-        frame_h: int,
-        offset_x: int,
-        offset_y: int,
-        title: str = "A_MAZE_ING GAME"
+    term: Terminal,
+    frame_w: int,
+    frame_h: int,
+    offset_x: int,
+    offset_y: int,
+    title: str = "A_MAZE_ING GAME"
 ) -> list[str]:
     buffer = []
     top_bdr = term.bold("╔") + term.bold("═") * (frame_w - 2) + term.bold("╗")
-    buffer.append(term.move_xy(
-        offset_x, offset_y) + term.bold_dim_green(top_bdr))
+    buffer.append(term.move_xy(offset_x, offset_y) + term.bold_dim_green(top_bdr))
 
     title_x = offset_x + max(1, (frame_w - len(title)) // 2)
-    buffer.append(term.move_xy(offset_x, offset_y + 1)
-          + term.bold_dim_green("║"))
-    buffer.append(term.move_xy(title_x, offset_y + 1)
-          + term.bold_cyan(title))
-    buffer.append(term.move_xy(offset_x + frame_w - 1, offset_y + 1)
-          + term.bold_dim_green("║"))
+    buffer.append(term.move_xy(offset_x, offset_y + 1) + term.bold_dim_green("║"))
+    buffer.append(term.move_xy(title_x, offset_y + 1) + term.bold_cyan(title))
+    buffer.append(
+        term.move_xy(offset_x + frame_w - 1, offset_y + 1) + term.bold_dim_green("║")
+    )
 
-    title_bdr = (term.bold("╠") + term.bold("═")
-                 * (frame_w - 2) + term.bold("╣"))
-    buffer.append(term.move_xy(offset_x, offset_y + 2)
-          + term.bold_dim_green(title_bdr))
+    title_bdr = term.bold("╠") + term.bold("═") * (frame_w - 2) + term.bold("╣")
+    buffer.append(term.move_xy(offset_x, offset_y + 2) + term.bold_dim_green(title_bdr))
     for y in range(3, frame_h - 3):
-        buffer.append(term.move_xy(offset_x, offset_y + y)
-              + term.bold_dim_green("║"))
-        buffer.append(term.move_xy(offset_x + frame_w - 1, offset_y + y)
-              + term.bold_dim_green("║"))
+        buffer.append(term.move_xy(offset_x, offset_y + y) + term.bold_dim_green("║"))
+        buffer.append(
+            term.move_xy(offset_x + frame_w - 1, offset_y + y)
+            + term.bold_dim_green("║")
+        )
 
     menu_bdr = term.bold("╠") + term.bold("═") * (frame_w - 2) + term.bold("╣")
-    buffer.append(term.move_xy(offset_x, offset_y + frame_h - 3)
-          + term.bold_dim_green(menu_bdr))
-    buffer.append(term.move_xy(offset_x, offset_y + frame_h - 2)
-          + term.bold_dim_green("║"))
-    buffer.append(term.move_xy(offset_x + frame_w - 1, offset_y + frame_h - 2)
-          + term.bold_dim_green("║"))
-
-    bottom_bdr = (
-        term.bold("╚") + term.bold("═") * (frame_w - 2) + term.bold("╝")
+    buffer.append(
+        term.move_xy(offset_x, offset_y + frame_h - 3) + term.bold_dim_green(menu_bdr)
     )
-    buffer.append(term.move_xy(offset_x, offset_y + frame_h - 1)
-          + term.bold_dim_green(bottom_bdr))
+    buffer.append(
+        term.move_xy(offset_x, offset_y + frame_h - 2) + term.bold_dim_green("║")
+    )
+    buffer.append(
+        term.move_xy(offset_x + frame_w - 1, offset_y + frame_h - 2)
+        + term.bold_dim_green("║")
+    )
+
+    bottom_bdr = term.bold("╚") + term.bold("═") * (frame_w - 2) + term.bold("╝")
+    buffer.append(
+        term.move_xy(offset_x, offset_y + frame_h - 1) + term.bold_dim_green(bottom_bdr)
+    )
 
     return buffer
 
@@ -63,14 +63,16 @@ def render_frame(
     display_grid: list[list[str]],
     title: str = "A_MAZE_ING GAME"
 ) -> tuple[list[str], int, int, int, int, int, int]:
-    if (mode == "emoji" and display_grid 
-        and len(display_grid) > 0 
-        and len(display_grid[0]) > 0):
+    if (
+        mode == "emoji"
+        and display_grid
+        and len(display_grid) > 0
+        and len(display_grid[0]) > 0
+    ):
         inner_w = len(display_grid[0]) * 2
         inner_h = len(display_grid)
     else:
-        inner_w = (len(grid[0]) * 2 + 1) * 2 if grid else \
-            (config.width * 2 + 1) * 2
+        inner_w = (len(grid[0]) * 2 + 1) * 2 if grid else (config.width * 2 + 1) * 2
         inner_h = len(grid) * 2 + 1 if grid else config.height * 2 + 1
 
     frame_w = max(inner_w + 4, 99)
@@ -90,12 +92,12 @@ def render_frame(
 
 
 def get_maze_lines(
-        term: Terminal,
-        grid: list[list[Cell]],
-        config: Config,
-        theme_name: str,
-        offset_x: int,
-        offset_y: int
+    term: Terminal,
+    grid: list[list[Cell]],
+    config: Config,
+    theme_name: str,
+    offset_x: int,
+    offset_y: int
 ) -> list[str]:
     """
     Renders the classic grid using row-based themes with full outer bdrs.
@@ -111,11 +113,9 @@ def get_maze_lines(
         mid_line = wall_tile
 
         for x, cell in enumerate(row):
-            is_42 = getattr(cell, 'is_42', False)
-            top_is_42 = y > 0 and getattr(grid[y - 1][x], 'is_42', False)
-            right_is_42 = x < len(row) - 1 and getattr(
-                grid[y][x + 1], 'is_42', False
-            )
+            is_42 = getattr(cell, "is_42", False)
+            top_is_42 = y > 0 and getattr(grid[y - 1][x], "is_42", False)
+            right_is_42 = x < len(row) - 1 and getattr(grid[y][x + 1], "is_42", False)
             if is_42 and top_is_42:
                 top_wall = pattern_42_tile
             else:
@@ -140,21 +140,19 @@ def get_maze_lines(
             mid_line += tile + right_wall
 
         buffer.append(term.move_xy(offset_x, offset_y + y * 2) + top_line)
-        buffer.append(term.move_xy(
-            offset_x, offset_y + y * 2 + 1) + mid_line)
+        buffer.append(term.move_xy(offset_x, offset_y + y * 2 + 1) + mid_line)
 
     bottom_line = wall_tile * (len(grid[0]) * 2 + 1)
-    buffer.append(term.move_xy(
-        offset_x, offset_y + len(grid) * 2) + bottom_line)
+    buffer.append(term.move_xy(offset_x, offset_y + len(grid) * 2) + bottom_line)
     return buffer
 
 
 def get_maze_emojis(
-        term: Terminal,
-        display_grid: list[list[str]],
-        theme_name: str,
-        offset_x: int,
-        offset_y: int
+    term: Terminal,
+    display_grid: list[list[str]],
+    theme_name: str,
+    offset_x: int,
+    offset_y: int
 ) -> list[str]:
     """Randering the grill extinded by emojis"""
 
@@ -164,13 +162,13 @@ def get_maze_emojis(
     for y, row in enumerate(display_grid):
         tile = ""
         for char in row:
-            if char == '4':
+            if char == "4":
                 tile += pattern_42_tile
-            elif char == 'W':
+            elif char == "W":
                 tile += get_tile(term, "wall", theme_name, mode="emoji")
-            elif char == 'S':
+            elif char == "S":
                 tile += get_tile(term, "start", theme_name, mode="emoji")
-            elif char == 'E':
+            elif char == "E":
                 tile += get_tile(term, "exit", theme_name, mode="emoji")
             else:
                 tile += get_tile(term, "path", theme_name, mode="emoji")
@@ -198,12 +196,10 @@ def get_solution_str(
     start = int(config.entry.x), int(config.entry.y)
     full_path = [start] + path
 
-    allowed_keys = {'a', 'q', 'r', 's', 't', 'm', 'KEY_RESIZE', 'KEY_ESCAPE'}
+    allowed_keys = {"a", "q", "r", "s", "t", "m", "KEY_RESIZE", "KEY_ESCAPE"}
 
     def get_step(x: int, y: int) -> None:
-        print(term.move_xy(
-            offset_x + x * 2, offset_y + y) + sol_tile, flush=True
-        )
+        print(term.move_xy(offset_x + x * 2, offset_y + y) + sol_tile, flush=True)
         if animate:
             key = term.inkey(timeout=delay)
             if key:
@@ -230,7 +226,7 @@ def get_solution_str(
             get_step(c_x, c_y)
 
 
-def draw_error_popup(term: Terminal, error_msg: str) -> None:
+def get_error_popup(term: Terminal, error_msg: str) -> None:
     popup_w = 64
     popup_h = 9
 
@@ -241,23 +237,22 @@ def draw_error_popup(term: Terminal, error_msg: str) -> None:
     bg_color = term.on_red
     text_color = term.bold_darkblue
 
-    buffer = []
+    buffer = [str(term.home) + str(term.clear)]
 
     for i in range(popup_h):
-        buffer.append(term.move_xy(start_x, start_y + i)
-              + bg_color(" " * popup_w))
+        buffer.append(term.move_xy(start_x, start_y + i) + bg_color(" " * popup_w))
 
     top_border = border_color("╔" + "═" * (popup_w - 2) + "╗")
     buffer.append(term.move_xy(start_x, start_y) + bg_color(top_border))
 
     for i in range(1, popup_h - 1):
         middle_line = border_color("║" + " " * (popup_w - 2))
-        buffer.append(term.move_xy(start_x, start_y + i) 
-              + bg_color(middle_line))
+        buffer.append(term.move_xy(start_x, start_y + i) + bg_color(middle_line))
 
     bottom_border = border_color("╚" + "═" * (popup_w - 2) + "╝")
-    buffer.append(term.move_xy(start_x, start_y + popup_h - 1)
-          + bg_color(bottom_border))
+    buffer.append(
+        term.move_xy(start_x, start_y + popup_h - 1) + bg_color(bottom_border)
+    )
 
     title_raw = " CONFIGURATION ERROR "
     title = f"{term.bold_white(title_raw)} "
@@ -267,14 +262,15 @@ def draw_error_popup(term: Terminal, error_msg: str) -> None:
     wrapped_lines = textwrap.wrap(error_msg, width=popup_w - 6)
     for idx, line in enumerate(wrapped_lines[:4]):
         line_x = start_x + (popup_w - len(line)) // 2
-        buffer.append(term.move_xy(line_x, start_y + 2 + idx)
-              + bg_color(text_color(line)))
+        buffer.append(
+            term.move_xy(line_x, start_y + 2 + idx) + bg_color(text_color(line))
+        )
 
     prompt_raw = " Adjust config.txt and regenerate [R] "
     prompt = term.bold_darkblue(prompt_raw)
     prompt_x = start_x + (popup_w - len(term.strip_seqs(prompt))) // 2
-    buffer.append(term.move_xy(prompt_x, start_y + popup_h - 2)
-          + bg_color(prompt))
+    buffer.append(term.move_xy(prompt_x, start_y + popup_h - 2) + bg_color(prompt))
+
     print("".join(buffer), flush=True)
 
 
@@ -299,22 +295,39 @@ def render_all(
     )
     main_buff.extend(frame_buff)
     if mode == "emoji":
-        main_buff.extend(get_maze_emojis(
-            term, display_grid, theme_name, offset_x=maze_x, offset_y=maze_y
-        ))
+        main_buff.extend(
+            get_maze_emojis(
+                term, display_grid, theme_name, offset_x=maze_x, offset_y=maze_y
+            )
+        )
     else:
-        main_buff.extend(get_maze_lines(
-            term, grid, config, theme_name, offset_x=maze_x, offset_y=maze_y
-        ))
+        main_buff.extend(
+            get_maze_lines(
+                term, grid, config, theme_name, offset_x=maze_x, offset_y=maze_y
+            )
+        )
     print("".join(main_buff), flush=True)
 
     menu_y = offset_y + inner_h + 4
     draw_controller_menu(
-        term, x=offset_x, y=menu_y, show_solution=show_solution,
-        theme_name=theme_name, mode=mode, frame_w=frame_w
+        term,
+        x=offset_x,
+        y=menu_y,
+        show_solution=show_solution,
+        theme_name=theme_name,
+        mode=mode,
+        frame_w=frame_w,
     )
     if show_solution and solution_coords:
         get_solution_str(
-            term, solution_coords, grid, config, theme_name, mode=mode,
-            offset_x=maze_x, offset_y=maze_y, animate=animate_path, delay=0.03
+            term,
+            solution_coords,
+            grid,
+            config,
+            theme_name,
+            mode=mode,
+            offset_x=maze_x,
+            offset_y=maze_y,
+            animate=animate_path,
+            delay=0.03,
         )

@@ -7,19 +7,19 @@ from maze.models import Cell
 from maze.generate_maze import MazeGenerator
 from ui.controller_menu import handle_input
 from .grid_converter import to_display_grid
-from ui.renderers import render_all, draw_error_popup
+from ui.renderers import render_all, get_error_popup
 from ui.solution import get_solution_coords
 
 
 def grafic_initialization(
-        config: Config,
-        grid: list[list[Cell]],
-        display_grid: list[list[str]],
-        initial_path: str = "",
-        theme_name: str = "tree_garden",
-        mode: str = "emoji",
-        show_solution: bool = False,
-        config_path: str = "config.txt"
+    config: Config,
+    grid: list[list[Cell]],
+    display_grid: list[list[str]],
+    initial_path: str = "",
+    theme_name: str = "tree_garden",
+    mode: str = "emoji",
+    show_solution: bool = False,
+    config_path: str = "config.txt"
 ):
     generate = MazeGenerator()
     term = Terminal()
@@ -28,10 +28,15 @@ def grafic_initialization(
         "config": config,
         "grid": grid,
         "display_grid": display_grid,
-        "path": initial_path
+        "path": initial_path,
+        "needs_clear": False
     }
 
     def step_callback(step_grid: list[list[Cell]]) -> None:
+        if current_state.get("needs_clear", False):
+            print(str(term.home) + str(term.clear), end="", flush=True)
+            current_state["needs_clear"] = False
+        
         active_config = current_state["config"]
         temp_display = to_display_grid(
             step_grid, active_config.width, active_config.height, active_config
@@ -39,22 +44,25 @@ def grafic_initialization(
         current_theme = current_state.get("theme_name", theme_name)
         current_mode = current_state.get("mode", mode)
         render_all(
-            term, active_config, step_grid, current_theme, current_mode,
-            show_solution=False, solution_coords=[], display_grid=temp_display,
+            term,
+            active_config,
+            step_grid,
+            current_theme,
+            current_mode,
+            show_solution=False,
+            solution_coords=[],
+            display_grid=temp_display,
             animate_path=False
         )
         key = term.inkey(timeout=0.02)
-        allowed_keys = {'a', 'q', 'r', 's', 't', 'm',
-                        'KEY_RESIZE', 'KEY_ESCAPE'}
+        allowed_keys = {"a", "q", "r", "s", "t", "m", "KEY_RESIZE", "KEY_ESCAPE"}
         if key:
             key_code = key.name if key.is_sequence else key.lower()
             if key_code in allowed_keys:
                 raise ActionInterrupted(key_code)
 
     def generate_run(
-        active_config: Config,
-        animate: bool = False,
-        reuse_current: bool = False
+        active_config: Config, animate: bool = False, reuse_current: bool = False
     ) -> tuple[list[list[Cell]], Config, str]:
         while True:
             try:
@@ -78,15 +86,17 @@ def grafic_initialization(
                 )
                 break
             except ConfigurationException as e:
-                draw_error_popup(term, str(e))
+                current_state["needs_clear"] = True
+                get_error_popup(term, str(e))
                 while True:
                     key = term.inkey(timeout=0.1)
                     if not key:
                         continue
                     key_code = key.name if key.is_sequence else key.lower()
-                    if key_code in ('q', 'KEY_ESCAPE'):
+                    if key_code in ("q", "KEY_ESCAPE"):
                         raise SystemExit(0)
-                    if key_code == 'r':
+                    if key_code == "r":
+                        print(str(term.home) + str(term.clear), end="", flush=True)
                         break
 
         new_display_grid = to_display_grid(
@@ -101,13 +111,13 @@ def grafic_initialization(
         return new_grid, new_config, new_path
 
     def refresh_ui(
-            curr_grid: list[list[Cell]],
-            curr_disp: list[list[str]],
-            curr_theme: str,
-            curr_mode: str,
-            curr_sol: bool,
-            curr_path: str = "",
-            animate: bool = False,
+        curr_grid: list[list[Cell]],
+        curr_disp: list[list[str]],
+        curr_theme: str,
+        curr_mode: str,
+        curr_sol: bool,
+        curr_path: str = "",
+        animate: bool = False
     ) -> None:
         current_state["theme_name"] = curr_theme
         current_state["mode"] = curr_mode
@@ -115,21 +125,39 @@ def grafic_initialization(
 
         solution_coords = (
             get_solution_coords(current_state["config"], path_to_use)
-            if curr_sol else []
+            if curr_sol
+            else []
         )
         render_all(
-            term, current_state["config"], curr_grid, curr_theme, curr_mode,
-            curr_sol, solution_coords, curr_disp, animate_path=animate
+            term,
+            current_state["config"],
+            curr_grid,
+            curr_theme,
+            curr_mode,
+            curr_sol,
+            solution_coords,
+            curr_disp,
+            animate_path=animate
         )
 
     with term.fullscreen(), term.raw(), term.hidden_cursor():
         refresh_ui(
-            grid, display_grid, theme_name, mode, show_solution,
-            curr_path=initial_path, animate=False
+            grid,
+            display_grid,
+            theme_name,
+            mode,
+            show_solution,
+            curr_path=initial_path,
+            animate=False
         )
         handle_input(
-            term, current_state["config"], grid, display_grid, theme_name,
-            mode, show_solution,
+            term,
+            current_state["config"],
+            grid,
+            display_grid,
+            theme_name,
+            mode,
+            show_solution,
             generate_fn=generate_run,
             refresh_ui_fn=refresh_ui,
             to_display_grid_fn=to_display_grid,
