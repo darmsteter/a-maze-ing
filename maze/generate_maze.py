@@ -20,7 +20,6 @@ class MazeGenerator():
             grid.append(row)
         return grid
 
-
     def add_42(self, grid: list[list[Cell]], entry: tuple[int, int], exit: tuple[int, int]) -> None:
         if len(grid) < 7 or len(grid[0]) < 5:
             print('The maze is too small to display "42" in the center.')
@@ -67,7 +66,11 @@ class MazeGenerator():
                 continue
             cell.was_visited = True
             break
-        if algorithm.lower() == 'prim':
+        if callback:
+            callback(grid)
+
+        alg = str(algorithm).lower().strip() if algorithm else ""
+        if alg == 'prim':
             self._generate_prim(grid, cell, callback=callback)
         else:
             self._generate_dfs(grid, cell, callback=callback)
@@ -138,7 +141,6 @@ class MazeGenerator():
             return False
         return bool(self.find_walled_neighbours(grid, cell))
 
-
     def find_dead_ends(self, grid: list[list[Cell]]) -> list[Cell]:
         dead_ends: list[Cell] = []
         for y in range(len(grid)):
@@ -146,7 +148,6 @@ class MazeGenerator():
                 if self.is_dead_end(grid[y][x], grid):
                     dead_ends.append(grid[y][x])
         return dead_ends
-
 
     def close_open_space(self, grid: list[list[Cell]]):
         for y in range(len(grid)):
@@ -209,7 +210,7 @@ class MazeGenerator():
     def _generate_dfs(
         self, grid: list[list[Cell]], cell: Cell, callback: Any = None
     ) -> None: 
-        remaining_cells = len(grid) * len(grid[0]) - self.marked_cells
+        remaining_cells = len(grid) * len(grid[0]) - self.marked_cells - 1
         self.dfs_recursive(grid, remaining_cells, cell, callback)
 
     def dfs_recursive(
@@ -227,9 +228,11 @@ class MazeGenerator():
             next_cell = neighbours[direction]
             next_cell.was_visited = True
             self.break_wall(cell, next_cell, direction)
+
             if callback:
                 callback(grid)
-            if self.dfs_recursive(grid, remaining_cells, next_cell):
+
+            if self.dfs_recursive(grid, remaining_cells, next_cell, callback):
                 return True
             neighbours = self.find_neighbours(grid, cell, False)
         return False
