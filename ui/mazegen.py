@@ -72,7 +72,7 @@ def grafic_initialization(
                     new_config = read_config_file(config_path)
 
                 cb = step_callback if animate else None
-                current_seed = active_config.seed if reuse_current else new_config.seed
+                # current_seed = active_config.seed if reuse_current else new_config.seed
 
                 new_grid, new_path = generate.generate(
                     new_config.height,
@@ -94,6 +94,8 @@ def grafic_initialization(
                         continue
                     key_code = key.name if key.is_sequence else key.lower()
                     if key_code in ("q", "KEY_ESCAPE"):
+                        print(str(term.home) + str(term.clear), end="", flush=True)
+                        print(term.normal + term.show_cursor, end="", flush=True)
                         raise SystemExit(0)
                     if key_code == "r":
                         print(str(term.home) + str(term.clear), end="", flush=True)

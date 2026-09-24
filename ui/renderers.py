@@ -259,17 +259,20 @@ def get_error_popup(term: Terminal, error_msg: str) -> None:
     title_x = start_x + (popup_w - len(title_raw)) // 2
     buffer.append(term.move_xy(title_x, start_y) + title)
 
-    wrapped_lines = textwrap.wrap(error_msg, width=popup_w - 6)
+    clean_msg = term.strip_seqs(error_msg)
+    wrapped_lines = textwrap.wrap(clean_msg, width=popup_w - 6)
     for idx, line in enumerate(wrapped_lines[:4]):
         line_x = start_x + (popup_w - len(line)) // 2
         buffer.append(
-            term.move_xy(line_x, start_y + 2 + idx) + bg_color(text_color(line))
+            term.move_xy(line_x, start_y + 2 + idx)
+            + bg_color(text_color(line))
         )
 
     prompt_raw = " Adjust config.txt and regenerate [R] "
     prompt = term.bold_darkblue(prompt_raw)
     prompt_x = start_x + (popup_w - len(term.strip_seqs(prompt))) // 2
-    buffer.append(term.move_xy(prompt_x, start_y + popup_h - 2) + bg_color(prompt))
+    buffer.append(term.move_xy(prompt_x, start_y + popup_h - 2)
+                  + bg_color(prompt))
 
     print("".join(buffer), flush=True)
 

@@ -21,8 +21,8 @@ class MazeGenerator():
         return grid
 
     def add_42(self, grid: list[list[Cell]], entry: tuple[int, int], exit: tuple[int, int]) -> None:
-        if len(grid) < 7 or len(grid[0]) < 5:
-            print('The maze is too small to display "42" in the center.')
+        if len(grid) < 5 or len(grid[0]) < 7:
+            # print('The maze is too small to display "42" in the center.')
             return
         pattern = [
             "x...xxx",
@@ -31,6 +31,7 @@ class MazeGenerator():
             "..x.x..",
             "..x.xxx"
         ]
+
         pattern_height = len(pattern)
         pattern_width = len(pattern[0])
         start_x = (len(grid[0]) - pattern_width) // 2

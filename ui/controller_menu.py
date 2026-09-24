@@ -49,12 +49,12 @@ def draw_controller_menu(
 ):
     sol_status = term.green("ON") if show_solution else term.red("OFF")
     controls_menu = (
-        f" {term.bold_yellow('[R]')} Reg: | "
+        f"{term.bold_yellow('[R]')} Reg: | "
         f"{term.bold_yellow('[S]')} Sol: {sol_status} | "
         f"{term.bold_yellow('[T]')} Theme: {term.yellow(theme_name)} | "
         f"{term.bold_orange('[M]')} Mode: {term.magenta(mode)} | "
         f"{term.bold_pink('[A]')} Live Gen | "
-        f"{term.bold_red('[Q/ESC]')} ESC"
+        f"{term.bold_red('[Q/ESC]')} EXIT"
     )
     visible_len = len(term.strip_seqs(controls_menu))
     if frame_w > 0:
@@ -62,7 +62,8 @@ def draw_controller_menu(
     else:
         draw_x = x
 
-    print(f"{term.move_xy(draw_x, y)} {controls_menu}", flush=True)
+    print(f"{term.move_xy(x, y)}{' ' * max(frame_w, visible_len)}", end="", flush=True)
+    print(f"{term.move_xy(draw_x, y)}{controls_menu}", flush=True)
 
 
 def handle_input(

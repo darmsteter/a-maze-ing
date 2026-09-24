@@ -67,8 +67,6 @@ class Config(BaseModel):
                 f"Maze dimensions too large ({self.width}x{self.height}).\n"
                 "Maximum allowed is 25x25!"
             )
-        if self.entry.x == self.exit.x and self.entry.y == self.exit.y:
-            raise ValueError("ENTRY and EXIT coordinates cannot be identical")
         if not self.output_file.endswith('.txt'):
             raise ValueError("Output file should end with .txt")
         return self
