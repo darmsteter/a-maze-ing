@@ -21,7 +21,7 @@ class MazeGenerator():
         return grid
 
     def add_42(self, grid: list[list[Cell]], entry: tuple[int, int], exit: tuple[int, int]) -> None:
-        if len(grid) < 5 or len(grid[0]) < 7:
+        if len(grid) < 7 or len(grid[0]) < 7:
             # print('The maze is too small to display "42" in the center.')
             return
         pattern = [

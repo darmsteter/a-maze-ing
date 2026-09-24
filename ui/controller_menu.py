@@ -49,9 +49,9 @@ def draw_controller_menu(
 ):
     sol_status = term.green("ON") if show_solution else term.red("OFF")
     controls_menu = (
-        f"{term.bold_yellow('[R]')} Reg: | "
-        f"{term.bold_yellow('[S]')} Sol: {sol_status} | "
-        f"{term.bold_yellow('[T]')} Theme: {term.yellow(theme_name)} | "
+        f"{term.bold_bright_yellow('[R]')} Reg: | "
+        f"{term.bold_bright_yellow('[S]')} Sol: {sol_status} | "
+        f"{term.bold_bright_yellow('[T]')} Theme: {term.bright_yellow(theme_name)} | "
         f"{term.bold_orange('[M]')} Mode: {term.magenta(mode)} | "
         f"{term.bold_pink('[A]')} Live Gen | "
         f"{term.bold_red('[Q/ESC]')} EXIT"

@@ -54,7 +54,7 @@ def grafic_initialization(
             display_grid=temp_display,
             animate_path=False
         )
-        key = term.inkey(timeout=0.02)
+        key = term.inkey(timeout=0.01)
         allowed_keys = {"a", "q", "r", "s", "t", "m", "KEY_RESIZE", "KEY_ESCAPE"}
         if key:
             key_code = key.name if key.is_sequence else key.lower()
