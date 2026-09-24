@@ -233,9 +233,9 @@ def get_error_popup(term: Terminal, error_msg: str) -> None:
     start_x = (term.width - popup_w) // 2
     start_y = (term.height - popup_h) // 2
 
-    border_color = term.bold_white
-    bg_color = term.on_red
-    text_color = term.bold_darkblue
+    border_color = term.bold_darkred
+    bg_color = term.on_indianred2
+    text_color = term.bold_gray100
 
     buffer = [str(term.home) + str(term.clear)]
 
@@ -255,7 +255,7 @@ def get_error_popup(term: Terminal, error_msg: str) -> None:
     )
 
     title_raw = " CONFIGURATION ERROR "
-    title = f"{term.bold_white(title_raw)} "
+    title = f"{term.bold_black_on_indianred2(title_raw)} "
     title_x = start_x + (popup_w - len(title_raw)) // 2
     buffer.append(term.move_xy(title_x, start_y) + title)
 
@@ -269,7 +269,7 @@ def get_error_popup(term: Terminal, error_msg: str) -> None:
         )
 
     prompt_raw = " Adjust config.txt and regenerate [R] "
-    prompt = term.bold_darkblue(prompt_raw)
+    prompt = term.bold_gray100(prompt_raw)
     prompt_x = start_x + (popup_w - len(term.strip_seqs(prompt))) // 2
     buffer.append(term.move_xy(prompt_x, start_y + popup_h - 2)
                   + bg_color(prompt))
