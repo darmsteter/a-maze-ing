@@ -100,8 +100,6 @@ def build_config(values: dict[ConfigKey, str]) -> Config:
                 else AlgorithmEnum.DFS
                 )
         )
-    except ValueError as e:
-        raise ConfigurationException(str(e)) from e
     except ValidationError as e:
         error_dict = e.errors()
         if error_dict[0]['type'] == 'value_error':
