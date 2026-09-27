@@ -87,7 +87,7 @@ def grafic_initialization(
                 break
             except ConfigurationException as e:
                 current_state["needs_clear"] = True
-                get_error_popup(term, str(e))
+                get_error_popup(term, str(e), )
                 while True:
                     key = term.inkey(timeout=0.1)
                     if not key:

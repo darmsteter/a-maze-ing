@@ -1,7 +1,7 @@
 import sys
 from blessed import Terminal
 from config import read_config_file
-from errors import ConfigurationException
+from errors import ConfigurationException, ConfigurationFileError
 from ui.grid_converter import to_display_grid
 from ui import grafic_initialization
 from maze.generate_maze import MazeGenerator
@@ -22,9 +22,19 @@ if __name__ == "__main__":
             try:
                 config = read_config_file(config_file)
                 break
-            except ConfigurationException as e:
+            except (ConfigurationFileError, ConfigurationException) as e:
                 print(f"Configuration error: {e}")
-                get_error_popup(term, str(e))
+                if isinstance(e, ConfigurationFileError): 
+                    error_msg = (
+                        "Please make sure that config.txt exists "
+                        "and has the correct name, then restart the program. "
+                        f"Details: {e}. "
+                    )
+                    prompt = " Press [Q] or [Esc] to exit "
+                else:
+                    error_msg = str(e)
+                    prompt = " Adjust config.txt and regenerate [R] "
+                get_error_popup(term, error_msg, prompt)
                 while True:
                     key = term.inkey(timeout=0.1)
                     if not key:

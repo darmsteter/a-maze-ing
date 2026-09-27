@@ -226,7 +226,7 @@ def get_solution_str(
             get_step(c_x, c_y)
 
 
-def get_error_popup(term: Terminal, error_msg: str) -> None:
+def get_error_popup(term: Terminal, error_msg: str, prompt_raw: str = " Adjust config.txt and regenerate [R] ") -> None:
     popup_w = 64
     popup_h = 9
 
@@ -268,7 +268,6 @@ def get_error_popup(term: Terminal, error_msg: str) -> None:
             + bg_color(text_color(line))
         )
 
-    prompt_raw = " Adjust config.txt and regenerate [R] "
     prompt = term.bold_gray100(prompt_raw)
     prompt_x = start_x + (popup_w - len(term.strip_seqs(prompt))) // 2
     buffer.append(term.move_xy(prompt_x, start_y + popup_h - 2)

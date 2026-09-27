@@ -1,7 +1,7 @@
 from pydantic import ValidationError
 
 from .models import Pair, Config, AlgorithmEnum, ConfigKey
-from errors import ConfigurationException
+from errors import ConfigurationException, ConfigurationFileError
 
 
 def store_config_value(values: dict[ConfigKey, str], key: str, value: str) -> None:
@@ -122,6 +122,6 @@ def read_config_file(file_name: str) -> Config:
             for line in config_file:
                 parse_config_lines(line, values)
     except (FileNotFoundError, PermissionError, IsADirectoryError) as e:
-        raise ConfigurationException(str(e)) from e
+        raise ConfigurationFileError(str(e)) from e
     validate_required_keys(values)
     return build_config(values)
