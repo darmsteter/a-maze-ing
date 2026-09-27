@@ -5,10 +5,10 @@ from blessed import Terminal
 EMOJI_THEMES = {
     "tree_garden": {
         "wall": lambda t: t.on_darkolivegreen('🌳'),  # 🍄🌸🌻
-        "path": lambda t: t.darkolivegreen('  '),
-        "start": lambda t: t.black('🐝'),
-        "exit": lambda t: t.black('🌸'),
-        "solution_path": lambda t: t.darkolivegreen('✨'),
+        "path": lambda t: t.on_gray18('  '),
+        "start": lambda t: t.on_gray18('🐝'),
+        "exit": lambda t: t.on_gray18('🌸'),
+        "solution_path": lambda t: t.on_gray18('✨'),
         "pattern_42": lambda t: t.on_darkolivegreen('🍄')
     },
     "beach": {
@@ -49,7 +49,7 @@ EMOJI_THEMES = {
 
 LINE_THEMES = {
     "green": {
-        "wall": lambda t: t.springgreen4('██'),
+        "wall": lambda t: t.on_springgreen4('  '),
         "path": lambda t: t.on_black('  '),
         "start": lambda t: t.bold_bright_yellow_on_black(' S'),
         "exit": lambda t: t.bold_red_on_black(' E'),
@@ -65,7 +65,7 @@ LINE_THEMES = {
         "pattern_42": lambda t: t.blink_maroon1_on_orchid1('██')
     },
     "purple": {
-        "wall": lambda t: t.darkorchid4('▓▓'),
+        "wall": lambda t: t.on_darkorchid4('  '),
         "path": lambda t: t.on_mediumpurple2('  '),
         "start": lambda t: t.bold_red_on_white(' S'),
         "exit": lambda t: t.bold_white_on_red(' E'),
@@ -89,7 +89,6 @@ LINE_THEMES = {
         "pattern_42": lambda t: t.blink_red_on_crimson('██')
     }
 }
-# ▒ ▒. ▓▓, █,
 
 
 def get_tile(
