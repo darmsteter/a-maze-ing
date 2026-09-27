@@ -246,8 +246,8 @@ def get_error_popup(term: Terminal, error_msg: str, prompt_raw: str = " Adjust c
     buffer.append(term.move_xy(start_x, start_y) + bg_color(top_border))
 
     for i in range(1, popup_h - 1):
-        middle_line = border_color("║" + " " * (popup_w - 2))
-        buffer.append(term.move_xy(start_x, start_y + i) + bg_color(middle_line))
+        mid_line = border_color("║" + " " * (popup_w - 2)) + border_color("║")
+        buffer.append(term.move_xy(start_x, start_y + i) + bg_color(mid_line))
 
     bottom_border = border_color("╚" + "═" * (popup_w - 2) + "╝")
     buffer.append(
@@ -255,7 +255,7 @@ def get_error_popup(term: Terminal, error_msg: str, prompt_raw: str = " Adjust c
     )
 
     title_raw = " CONFIGURATION ERROR "
-    title = f"{term.bold_black_on_indianred2(title_raw)} "
+    title = term.blink_bold_black_on_indianred2(f"{title_raw}")
     title_x = start_x + (popup_w - len(title_raw)) // 2
     buffer.append(term.move_xy(title_x, start_y) + title)
 
