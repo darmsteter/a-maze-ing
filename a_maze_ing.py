@@ -5,6 +5,7 @@ from errors import ConfigurationException, ConfigurationFileError
 from ui.grid_converter import to_display_grid
 from ui import grafic_initialization
 from maze.generate_maze import MazeGenerator
+from maze.output_file import generate_output_file
 from ui.renderers import get_error_popup
 
 
@@ -58,6 +59,7 @@ if __name__ == "__main__":
         config.perfect,
         config.algorithm
     )
+    generate_output_file(grid, config, path)
     display_grid = to_display_grid(
         grid, config.width, config.height, config
     )

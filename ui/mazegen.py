@@ -5,6 +5,7 @@ from config.parser import read_config_file
 from errors import ActionInterrupted, ConfigurationException, ConfigurationFileError
 from maze.models import Cell
 from maze.generate_maze import MazeGenerator
+from maze.output_file import generate_output_file
 from ui.controller_menu import handle_input
 from .grid_converter import to_display_grid
 from ui.renderers import render_all, get_error_popup
@@ -84,6 +85,7 @@ def grafic_initialization(
                     new_config.algorithm,
                     callback=cb
                 )
+                generate_output_file(new_grid, new_config, new_path)
                 break
             except (ConfigurationFileError, ConfigurationException) as e:
                 current_state["needs_clear"] = True
