@@ -2,7 +2,7 @@ from blessed import Terminal
 from typing import Any
 from config import Config
 from config.parser import read_config_file
-from errors import ActionInterrupted, ConfigurationException
+from errors import ActionInterrupted, ConfigurationException, ConfigurationFileError
 from maze.models import Cell
 from maze.generate_maze import MazeGenerator
 from ui.controller_menu import handle_input
@@ -85,9 +85,9 @@ def grafic_initialization(
                     callback=cb
                 )
                 break
-            except ConfigurationException as e:
+            except (ConfigurationFileError, ConfigurationException) as e:
                 current_state["needs_clear"] = True
-                get_error_popup(term, str(e), )
+                get_error_popup(term, str(e))
                 while True:
                     key = term.inkey(timeout=0.1)
                     if not key:
