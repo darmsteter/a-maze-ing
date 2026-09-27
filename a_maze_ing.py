@@ -22,6 +22,16 @@ if __name__ == "__main__":
         while True:
             try:
                 config = read_config_file(config_file)
+                generator = MazeGenerator()
+                grid, path = generator.generate(
+                    config.height,
+                    config.width,
+                    (config.entry.x, config.entry.y),
+                    (config.exit.x, config.exit.y),
+                    config.seed,
+                    config.perfect,
+                    config.algorithm
+                )
                 break
             except (ConfigurationFileError, ConfigurationException) as e:
                 print(f"Configuration error: {e}")
@@ -49,16 +59,6 @@ if __name__ == "__main__":
                         print(str(term.home) + str(term.clear), end="", flush=True)
                         break
                 # exit()
-    generator = MazeGenerator()
-    grid, path = generator.generate(
-        config.height,
-        config.width,
-        (config.entry.x, config.entry.y),
-        (config.exit.x, config.exit.y),
-        config.seed,
-        config.perfect,
-        config.algorithm
-    )
     generate_output_file(grid, config, path)
     display_grid = to_display_grid(
         grid, config.width, config.height, config
