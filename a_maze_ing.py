@@ -2,12 +2,9 @@ import sys
 from blessed import Terminal
 from config import read_config_file
 from errors import ConfigurationException, ConfigurationFileError
-from ui.grid_converter import to_display_grid
-from ui import grafic_initialization
 from maze.generate_maze import MazeGenerator
 from maze.output_file import generate_output_file
-from ui.renderers import get_error_popup
-
+from ui import get_error_popup, grafic_initialization, to_display_grid
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -29,13 +26,13 @@ if __name__ == "__main__":
                     (config.entry.x, config.entry.y),
                     (config.exit.x, config.exit.y),
                     config.seed,
-                    config.perfect,
-                    config.algorithm
+                    bool(config.perfect),
+                    str(config.algorithm),
                 )
                 break
             except (ConfigurationFileError, ConfigurationException) as e:
                 print(f"Configuration error: {e}")
-                if isinstance(e, ConfigurationFileError): 
+                if isinstance(e, ConfigurationFileError):
                     error_msg = (
                         "Please make sure that config.txt exists "
                         "and has the correct name, then restart the program. "
@@ -52,20 +49,31 @@ if __name__ == "__main__":
                         continue
                     key_code = key.name if key.is_sequence else key.lower()
                     if key_code in ("q", "KEY_ESCAPE"):
-                        print(str(term.home) + str(term.clear), end="", flush=True)
-                        print(term.normal + term.show_cursor, end="", flush=True)
+                        print(
+                            str(term.home) + str(term.clear),
+                            end="",
+                            flush=True,
+                        )
+                        print(
+                            term.normal + term.show_cursor, end="", flush=True
+                        )
                         raise SystemExit(0)
                     if key_code == "r":
-                        print(str(term.home) + str(term.clear), end="", flush=True)
+                        print(
+                            str(term.home) + str(term.clear),
+                            end="",
+                            flush=True,
+                        )
                         break
-                # exit()
     generate_output_file(grid, config, path)
-    display_grid = to_display_grid(
-        grid, config.width, config.height, config
-    )
+    display_grid = to_display_grid(grid, config.width, config.height, config)
     grafic_initialization(
-        config, grid, display_grid,
-        initial_path=path, theme_name="tree_garden", mode="emoji"
+        config,
+        grid,
+        display_grid,
+        initial_path=path,
+        theme_name="tree_garden",
+        mode="emoji",
     )
 
 

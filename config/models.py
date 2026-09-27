@@ -20,18 +20,18 @@ class ConfigKey(StrEnum):
             cls.ENTRY,
             cls.EXIT,
             cls.OUTPUT_FILE,
-            cls.PERFECT
+            cls.PERFECT,
         )
 
 
 class PerfectEnum(StrEnum):
-    TRUE = 'True'
-    FALSE = 'False'
+    TRUE = "True"
+    FALSE = "False"
 
 
 class AlgorithmEnum(StrEnum):
-    DFS = 'dfs'
-    PRIM = 'prim'
+    DFS = "dfs"
+    PRIM = "prim"
 
 
 class Pair(BaseModel):
@@ -49,8 +49,8 @@ class Config(BaseModel):
     seed: int | None = Field(None)
     algorithm: AlgorithmEnum | None = AlgorithmEnum.DFS
 
-    @model_validator(mode='after')
-    def config_check(self) -> 'Config':
+    @model_validator(mode="after")
+    def config_check(self) -> "Config":
         if self.entry.x >= self.width or self.entry.y >= self.height:
             raise ValueError("Entry should be inside maze.")
         if self.exit.x >= self.width or self.exit.y >= self.height:
@@ -67,6 +67,6 @@ class Config(BaseModel):
                 f"Maze dimensions too large ({self.width}x{self.height}).\n"
                 "Maximum allowed is 25x25!"
             )
-        if not self.output_file.endswith('.txt'):
+        if not self.output_file.endswith(".txt"):
             raise ValueError("Output file should end with .txt")
         return self

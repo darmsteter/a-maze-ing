@@ -1,5 +1,11 @@
-from ui.mazegen import grafic_initialization
 from ui.grid_converter import to_display_grid
-import time
+from ui.mazegen import grafic_initialization
+from ui.renderers import get_error_popup, render_all
 
-__all__ = ["grafic_initialization", "to_display_grid", "time"]
+
+__all__: list[str] = [
+    "to_display_grid",
+    "grafic_initialization",
+    "get_error_popup",
+    "render_all"
+]

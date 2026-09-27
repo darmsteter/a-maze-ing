@@ -1,13 +1,15 @@
-from blessed import Terminal
 from typing import Any
-from config import Config
+from blessed import Terminal
+
+from config.models import Config
 from config.parser import read_config_file
 from errors import ActionInterrupted, ConfigurationException, ConfigurationFileError
 from maze.models import Cell
 from maze.generate_maze import MazeGenerator
 from maze.output_file import generate_output_file
+
 from ui.controller_menu import handle_input
-from .grid_converter import to_display_grid
+from ui.grid_converter import to_display_grid
 from ui.renderers import render_all, get_error_popup
 from ui.solution import get_solution_coords
 
@@ -21,7 +23,7 @@ def grafic_initialization(
     mode: str = "emoji",
     show_solution: bool = False,
     config_path: str = "config.txt"
-):
+) -> None:
     generate = MazeGenerator()
     term = Terminal()
 
@@ -37,13 +39,14 @@ def grafic_initialization(
         if current_state.get("needs_clear", False):
             print(str(term.home) + str(term.clear), end="", flush=True)
             current_state["needs_clear"] = False
-        
+
         active_config = current_state["config"]
         temp_display = to_display_grid(
             step_grid, active_config.width, active_config.height, active_config
         )
         current_theme = current_state.get("theme_name", theme_name)
         current_mode = current_state.get("mode", mode)
+
         render_all(
             term,
             active_config,
@@ -55,8 +58,10 @@ def grafic_initialization(
             display_grid=temp_display,
             animate_path=False
         )
+
         key = term.inkey(timeout=0.01)
-        allowed_keys = {"a", "q", "r", "s", "t", "m", "KEY_RESIZE", "KEY_ESCAPE"}
+        allowed_keys = {"a", "q", "r", "s", "t",
+                        "m", "KEY_RESIZE", "KEY_ESCAPE"}
         if key:
             key_code = key.name if key.is_sequence else key.lower()
             if key_code in allowed_keys:
@@ -73,7 +78,6 @@ def grafic_initialization(
                     new_config = read_config_file(config_path)
 
                 cb = step_callback if animate else None
-                # current_seed = active_config.seed if reuse_current else new_config.seed
 
                 new_grid, new_path = generate.generate(
                     new_config.height,
@@ -81,8 +85,8 @@ def grafic_initialization(
                     (new_config.entry.x, new_config.entry.y),
                     (new_config.exit.x, new_config.exit.y),
                     new_config.seed,
-                    new_config.perfect,
-                    new_config.algorithm,
+                    bool(new_config.perfect),
+                    str(new_config.algorithm),
                     callback=cb
                 )
                 generate_output_file(new_grid, new_config, new_path)
@@ -96,11 +100,13 @@ def grafic_initialization(
                         continue
                     key_code = key.name if key.is_sequence else key.lower()
                     if key_code in ("q", "KEY_ESCAPE"):
-                        print(str(term.home) + str(term.clear), end="", flush=True)
+                        print(str(term.home) + str(term.clear),
+                              end="", flush=True)
                         print(term.normal + term.show_cursor, end="", flush=True)
                         raise SystemExit(0)
                     if key_code == "r":
-                        print(str(term.home) + str(term.clear), end="", flush=True)
+                        print(str(term.home) + str(term.clear),
+                              end="", flush=True)
                         break
 
         new_display_grid = to_display_grid(

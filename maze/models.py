@@ -1,4 +1,5 @@
 from enum import IntEnum
+from config.models import Config
 
 
 class Directions(IntEnum):
@@ -9,11 +10,11 @@ class Directions(IntEnum):
 
 
 DIRECTIONS = (
-        (Directions.TOP, 0, -1),
-        (Directions.RIGHT, 1, 0),
-        (Directions.BOTTOM, 0, 1),
-        (Directions.LEFT, -1, 0)
-        )
+    (Directions.TOP, 0, -1),
+    (Directions.RIGHT, 1, 0),
+    (Directions.BOTTOM, 0, 1),
+    (Directions.LEFT, -1, 0),
+)
 
 
 class Cell:
@@ -39,10 +40,10 @@ class Cell:
             and self.left == 1
         )
 
-    def is_start(self, config) -> bool:
+    def is_start(self, config: Config) -> bool:
         return self.x == int(config.entry.x) and self.y == int(config.entry.y)
 
-    def is_exit(self, config) -> bool:
+    def is_exit(self, config: Config) -> bool:
         return self.x == int(config.exit.x) and self.y == int(config.exit.y)
 
 

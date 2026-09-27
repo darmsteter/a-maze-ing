@@ -1,4 +1,3 @@
-import abc
 import random
 from typing import Any
 from errors import ConfigurationException
@@ -7,7 +6,7 @@ from .find_path import find_path
 from .models import Cell, Directions, DIRECTIONS
 
 
-class MazeGenerator():
+class MazeGenerator:
     def __init__(self) -> None:
         self.marked_cells = 0
 
@@ -20,17 +19,16 @@ class MazeGenerator():
             grid.append(row)
         return grid
 
-    def add_42(self, grid: list[list[Cell]], entry: tuple[int, int], exit: tuple[int, int]) -> None:
+    def add_42(
+        self,
+        grid: list[list[Cell]],
+        entry: tuple[int, int],
+        exit: tuple[int, int],
+    ) -> None:
         if len(grid) < 7 or len(grid[0]) < 7:
             # print('The maze is too small to display "42" in the center.')
             return
-        pattern = [
-            "x...xxx",
-            "x.....x",
-            "xxx.xxx",
-            "..x.x..",
-            "..x.xxx"
-        ]
+        pattern = ["x...xxx", "x.....x", "xxx.xxx", "..x.x..", "..x.xxx"]
 
         pattern_height = len(pattern)
         pattern_width = len(pattern[0])
@@ -41,7 +39,7 @@ class MazeGenerator():
         for y in range(pattern_height):
             for x in range(pattern_width):
                 position = (start_x + x, start_y + y)
-                if pattern[y][x] != 'x':
+                if pattern[y][x] != "x":
                     continue
                 if position == entry:
                     raise ConfigurationException("Entry cannot be inside 42.")
@@ -51,9 +49,15 @@ class MazeGenerator():
                 self.marked_cells += 1
 
     def generate(
-        self, height: int, width: int, entry: tuple[int, int],
-        exit: tuple[int, int], seed: int | None, perfect: bool,
-        algorithm: str, callback: Any = None
+        self,
+        height: int,
+        width: int,
+        entry: tuple[int, int],
+        exit: tuple[int, int],
+        seed: int | None,
+        perfect: bool,
+        algorithm: str,
+        callback: Any = None,
     ) -> tuple[list[list[Cell]], str]:
         grid = self.create_grid(height, width)
         self.marked_cells = 0
@@ -71,16 +75,18 @@ class MazeGenerator():
             callback(grid)
 
         alg = str(algorithm).lower().strip() if algorithm else ""
-        if alg == 'prim':
+        if alg == "prim":
             self._generate_prim(grid, cell, callback=callback)
         else:
             self._generate_dfs(grid, cell, callback=callback)
-        if perfect == "False":
+        if not perfect:
             self.imperfect_maze(grid)
 
         return grid, find_path(exit, entry, grid)
 
-    def break_wall(self, current: Cell, neighbour: Cell, direction: Directions) -> None:
+    def break_wall(
+        self, current: Cell, neighbour: Cell, direction: Directions
+    ) -> None:
         match direction:
             case Directions.TOP:
                 current.top = 0
@@ -95,7 +101,9 @@ class MazeGenerator():
                 current.left = 0
                 neighbour.right = 0
 
-    def add_wall(self, current: Cell, neighbour: Cell, direction: Directions) -> None:
+    def add_wall(
+        self, current: Cell, neighbour: Cell, direction: Directions
+    ) -> None:
         match direction:
             case Directions.TOP:
                 current.top = 1
@@ -110,7 +118,9 @@ class MazeGenerator():
                 current.left = 1
                 neighbour.right = 1
 
-    def find_neighbours(self, grid: list[list[Cell]], cell: Cell, visited: bool) -> dict[Directions, Cell]:
+    def find_neighbours(
+        self, grid: list[list[Cell]], cell: Cell, visited: bool
+    ) -> dict[Directions, Cell]:
         neighbours: dict[Directions, Cell] = {}
         for direction, dir_x, dir_y in DIRECTIONS:
             x = cell.x + dir_x
@@ -123,7 +133,9 @@ class MazeGenerator():
                 neighbours[direction] = neighbour
         return neighbours
 
-    def find_walled_neighbours(self, grid: list[list[Cell]], cell: Cell) -> dict[Directions, Cell]:
+    def find_walled_neighbours(
+        self, grid: list[list[Cell]], cell: Cell
+    ) -> dict[Directions, Cell]:
         neighbours: dict[Directions, Cell] = {}
         walls = (cell.top, cell.right, cell.bottom, cell.left)
         for direction, dir_x, dir_y in DIRECTIONS:
@@ -150,22 +162,24 @@ class MazeGenerator():
                     dead_ends.append(grid[y][x])
         return dead_ends
 
-    def close_open_space(self, grid: list[list[Cell]]):
+    def close_open_space(self, grid: list[list[Cell]]) -> bool:
         for y in range(len(grid)):
             for x in range(len(grid[y])):
                 cell = grid[y][x]
                 if cell.top or cell.bottom or cell.left or cell.right:
                     continue
-                if any((
-                    grid[y - 1][x - 1].right,
-                    grid[y - 1][x - 1].bottom,
-                    grid[y - 1][x + 1].left,
-                    grid[y - 1][x + 1].bottom,
-                    grid[y + 1][x - 1].right,
-                    grid[y + 1][x - 1].top,
-                    grid[y + 1][x + 1].left,
-                    grid[y + 1][x + 1].top
-                )):
+                if any(
+                    (
+                        grid[y - 1][x - 1].right,
+                        grid[y - 1][x - 1].bottom,
+                        grid[y - 1][x + 1].left,
+                        grid[y - 1][x + 1].bottom,
+                        grid[y + 1][x - 1].right,
+                        grid[y + 1][x - 1].top,
+                        grid[y + 1][x + 1].left,
+                        grid[y + 1][x + 1].top,
+                    )
+                ):
                     continue
                 directions = random.sample(DIRECTIONS, random.randint(1, 2))
                 for direction, dir_x, dir_y in directions:
@@ -192,31 +206,36 @@ class MazeGenerator():
     def _generate_prim(
         self, grid: list[list[Cell]], cell: Cell, callback: Any = None
     ) -> None:
-        frontier = list(
-            self.find_neighbours(grid, cell, False).values()
-        )
+        frontier = list(self.find_neighbours(grid, cell, False).values())
         while frontier:
             current_cell = random.choice(frontier)
             visited_neighbours = self.find_neighbours(grid, current_cell, True)
             direction = random.choice(list(visited_neighbours))
-            self.break_wall(current_cell, visited_neighbours[direction], direction)
+            self.break_wall(
+                current_cell, visited_neighbours[direction], direction
+            )
             frontier.remove(current_cell)
             if callback:
                 callback(grid)
             grid[current_cell.y][current_cell.x].was_visited = True
-            for value in self.find_neighbours(grid, current_cell, False).values():
-                if value not in frontier: 
+            for value in self.find_neighbours(
+                grid, current_cell, False
+            ).values():
+                if value not in frontier:
                     frontier.append(value)
 
     def _generate_dfs(
         self, grid: list[list[Cell]], cell: Cell, callback: Any = None
-    ) -> None: 
+    ) -> None:
         remaining_cells = len(grid) * len(grid[0]) - self.marked_cells - 1
         self.dfs_recursive(grid, remaining_cells, cell, callback)
 
     def dfs_recursive(
-        self, grid: list[list[Cell]], remaining_cells: int,
-        cell: Cell, callback: Any = None
+        self,
+        grid: list[list[Cell]],
+        remaining_cells: int,
+        cell: Cell,
+        callback: Any = None,
     ) -> bool:
         remaining_cells -= 1
         if remaining_cells == 0:
