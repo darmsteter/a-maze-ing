@@ -259,7 +259,7 @@ def get_solution_str(
 def get_error_popup(
     term: Terminal,
     error_msg: str,
-    prompt_raw: str = " Adjust config.txt and regenerate [R] ",
+    prompt_raw: str = "Adjust config.txt and regenerate [R]. Press [Q] or [Esc] to exit.",
 ) -> None:
     popup_w = 64
     popup_h = 9

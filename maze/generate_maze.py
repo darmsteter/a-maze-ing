@@ -25,7 +25,7 @@ class MazeGenerator:
         entry: tuple[int, int],
         exit: tuple[int, int],
     ) -> None:
-        if len(grid) < 7 or len(grid[0]) < 7:
+        if len(grid) < 7 or len(grid[0]) < 9:
             return
         pattern = ["x...xxx", "x.....x", "xxx.xxx", "..x.x..", "..x.xxx"]
 

@@ -107,28 +107,22 @@ def build_config(values: dict[ConfigKey, str]) -> Config:
                 else AlgorithmEnum.DFS
             ),
         )
-    except ValueError as e:
-        try:
+    except ValidationError as e:
             error_dict = e.errors()
             if error_dict[0]["type"] == "value_error":
                 error_message = error_dict[0]["msg"].replace("Value error, ", "")
-        except AttributeError: 
-            error_message = e
-        raise ConfigurationException(error_message)
-    except ValidationError as e:
-        error_dict = e.errors()
-        if error_dict[0]["type"] == "value_error":
-            error_message = error_dict[0]["msg"].replace("Value error, ", "")
-        else:
-            error_message = "\n".join(
-                [
-                    f"Invalid value for field '{error['loc'][0]}':"
-                    f" {error['msg']}"
-                    f", but received '{error['input']}'."
-                    for error in error_dict
-                ]
-            )
-        raise ConfigurationException(error_message)
+            else:
+                error_message = "\n".join(
+                    [
+                        f"Invalid value for field '{error['loc'][0]}':"
+                        f" {error['msg']}"
+                        f", but received '{error['input']}'."
+                        for error in error_dict
+                    ]
+                )
+            raise ConfigurationException(error_message)
+    except ValueError as e:
+        raise ConfigurationException(e)
     return config
 
 
