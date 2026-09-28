@@ -14,23 +14,35 @@ def get_maze_frame_and_title(
     offset_y: int,
     title: str = "A_MAZE_ING GAME",
 ) -> list[str]:
-    buffer = []
+    buffer: list[str] = []
+    bg_style = term.on_gray10
+    wall_style = term.bold_darkgreen
+
     top_bdr = term.bold("╔") + term.bold("═") * (frame_w - 2) + term.bold("╗")
     buffer.append(
         term.move_xy(offset_x, offset_y) + term.bold_darkgreen(top_bdr)
     )
 
-    title_x = offset_x + max(1, (frame_w - len(title)) // 2)
-    buffer.append(
-        term.move_xy(offset_x, offset_y + 1) + term.bold_darkgreen("║")
+    title_x = max(1, (frame_w - 2 - len(title)) // 2)
+    right_pad = max(0, frame_w - 2 - len(title) - title_x)
+    title_raw = (
+        term.move_xy(offset_x, offset_y + 1)
+        + wall_style("║")
+        + bg_style(" " * title_x)
+        + bg_style(term.bold_turquoise1(title))
+        + bg_style(" " * right_pad)
+        + wall_style("║")
     )
-    buffer.append(
-        term.move_xy(title_x, offset_y + 1) + term.bold_turquoise1(title)
-    )
-    buffer.append(
-        term.move_xy(offset_x + frame_w - 1, offset_y + 1)
-        + term.bold_darkgreen("║")
-    )
+    buffer.append(title_raw)
+    #     term.move_xy(offset_x, offset_y + 1) + term.bold_darkgreen("║")
+    # )
+    # buffer.append(
+    #     term.move_xy(title_x, offset_y + 1) + term.bold_turquoise1(title)
+    # )
+    # buffer.append(
+    #     term.move_xy(offset_x + frame_w - 1, offset_y + 1)
+    #     + term.bold_darkgreen("║")
+    # )
 
     title_bdr = (
         term.bold("╠") + term.bold("═") * (frame_w - 2) + term.bold("╣")
@@ -40,25 +52,28 @@ def get_maze_frame_and_title(
     )
     for y in range(3, frame_h - 3):
         buffer.append(
-            term.move_xy(offset_x, offset_y + y) + term.bold_darkgreen("║")
-        )
-        buffer.append(
-            term.move_xy(offset_x + frame_w - 1, offset_y + y)
-            + term.bold_darkgreen("║")
+            term.move_xy(offset_x, offset_y + y)
+            + wall_style("║")
+            + bg_style(" " * (frame_w - 2))
+            + wall_style("║")
         )
 
     menu_bdr = term.bold("╠") + term.bold("═") * (frame_w - 2) + term.bold("╣")
     buffer.append(
-        term.move_xy(offset_x, offset_y + frame_h - 3)
-        + term.bold_darkgreen(menu_bdr)
-    )
+        term.move_xy(offset_x, offset_y + frame_h - 3) + wall_style(menu_bdr))
+    # buffer.append(
+    #     term.move_xy(offset_x, offset_y + frame_h - 2)
+    #     + term.bold_darkgreen("║")
+    # )
+    # buffer.append(
+    #     term.move_xy(offset_x + frame_w - 1, offset_y + frame_h - 2)
+    #     + term.bold_darkgreen("║")
+    # )
     buffer.append(
         term.move_xy(offset_x, offset_y + frame_h - 2)
-        + term.bold_darkgreen("║")
-    )
-    buffer.append(
-        term.move_xy(offset_x + frame_w - 1, offset_y + frame_h - 2)
-        + term.bold_darkgreen("║")
+        + wall_style("║")
+        + bg_style(" " * (frame_w - 2))
+        + wall_style("║")
     )
 
     bottom_bdr = (
@@ -66,7 +81,7 @@ def get_maze_frame_and_title(
     )
     buffer.append(
         term.move_xy(offset_x, offset_y + frame_h - 1)
-        + term.bold_darkgreen(bottom_bdr)
+        + wall_style(bottom_bdr)
     )
 
     return buffer

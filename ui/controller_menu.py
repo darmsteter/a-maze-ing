@@ -62,6 +62,7 @@ def draw_controller_menu(
     mode: str,
     frame_w: int = 0,
 ) -> None:
+    bg_style = term.on_gray10
     sol_status = (
         term.bold_springgreen("ON") if show_solution else term.bold_red3("OFF")
     )
@@ -75,15 +76,19 @@ def draw_controller_menu(
         f"{term.bold_red3('[Q/ESC]')} EXIT"
     )
     visible_len = len(term.strip_seqs(controls_menu))
+    inner_w = frame_w - 2 if frame_w > 0 else visible_len
 
-    if frame_w > 0:
-        draw_x = x + max(1, (frame_w - visible_len) // 2)
-    else:
-        draw_x = x
+    left_pad = max(0, (inner_w - visible_len) // 2)
+    right_pad = max(0, inner_w - visible_len - left_pad)
 
-    print(f"{term.move_xy(x, y)}{' ' * max(
-        frame_w, visible_len)}", end="", flush=True)
-    print(f"{term.move_xy(draw_x, y)}{controls_menu}", flush=True)
+    menu_row = (
+        bg_style(" " * left_pad)
+        + bg_style(controls_menu)
+        + bg_style(" " * right_pad)
+    )
+
+    print(f"{term.move_xy(x + 1, y)}{menu_row}", end="", flush=True)
+    # print(f"{term.move_xy(draw_x, y)}{controls_menu}", flush=True)
 
 
 def handle_input(

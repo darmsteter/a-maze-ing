@@ -4,10 +4,10 @@ from blessed import Terminal
 EMOJI_THEMES = {
     "tree_garden": {
         "wall": lambda t: t.on_darkolivegreen("🌳"),
-        "path": lambda t: t.on_gray18("  "),
-        "start": lambda t: t.on_gray18("🐝"),
-        "exit": lambda t: t.on_gray18("🌸"),
-        "solution_path": lambda t: t.on_gray18("✨"),
+        "path": lambda t: t.on_gray10("  "),
+        "start": lambda t: t.on_gray10("🐝"),
+        "exit": lambda t: t.on_gray10("🌸"),
+        "solution_path": lambda t: t.on_gray10("✨"),
         "pattern_42": lambda t: t.on_darkolivegreen("🍄"),
     },
     "beach": {
