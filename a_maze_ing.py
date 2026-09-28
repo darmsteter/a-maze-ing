@@ -26,7 +26,7 @@ if __name__ == "__main__":
                     (config.entry.x, config.entry.y),
                     (config.exit.x, config.exit.y),
                     config.seed,
-                    bool(config.perfect),
+                    config.perfect,
                     str(config.algorithm),
                 )
                 break

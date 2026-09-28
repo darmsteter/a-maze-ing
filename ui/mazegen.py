@@ -85,7 +85,7 @@ def grafic_initialization(
                     (new_config.entry.x, new_config.entry.y),
                     (new_config.exit.x, new_config.exit.y),
                     new_config.seed,
-                    bool(new_config.perfect),
+                    new_config.perfect,
                     str(new_config.algorithm),
                     callback=cb
                 )

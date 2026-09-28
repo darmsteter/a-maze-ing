@@ -26,7 +26,6 @@ class MazeGenerator:
         exit: tuple[int, int],
     ) -> None:
         if len(grid) < 7 or len(grid[0]) < 7:
-            # print('The maze is too small to display "42" in the center.')
             return
         pattern = ["x...xxx", "x.....x", "xxx.xxx", "..x.x..", "..x.xxx"]
 
@@ -55,7 +54,7 @@ class MazeGenerator:
         entry: tuple[int, int],
         exit: tuple[int, int],
         seed: int | None,
-        perfect: bool,
+        perfect: str,
         algorithm: str,
         callback: Any = None,
     ) -> tuple[list[list[Cell]], str]:
@@ -79,7 +78,7 @@ class MazeGenerator:
             self._generate_prim(grid, cell, callback=callback)
         else:
             self._generate_dfs(grid, cell, callback=callback)
-        if not perfect:
+        if perfect == 'False':
             self.imperfect_maze(grid)
 
         return grid, find_path(exit, entry, grid)
