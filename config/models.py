@@ -20,7 +20,6 @@ class ConfigKey(StrEnum):
             cls.ENTRY,
             cls.EXIT,
             cls.OUTPUT_FILE,
-            cls.PERFECT,
         )
 
 

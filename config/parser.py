@@ -91,7 +91,11 @@ def build_config(values: dict[ConfigKey, str]) -> Config:
             entry=entry_coordinate,
             exit=exit_coordinate,
             output_file=values[ConfigKey.OUTPUT_FILE],
-            perfect=PerfectEnum(values[ConfigKey.PERFECT]),
+            perfect=PerfectEnum(
+                values[ConfigKey.PERFECT]
+                if ConfigKey.PERFECT in values
+                else PerfectEnum.FALSE
+                ),
             seed=(
                 int(values[ConfigKey.SEED])
                 if ConfigKey.SEED in values
