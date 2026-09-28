@@ -57,10 +57,10 @@ class Config(BaseModel):
             raise ValueError("Exit should be inside maze.")
         if self.entry.x == self.exit.x and self.entry.y == self.exit.y:
             raise ValueError("Exit and enty shouldn't be same point.")
-        if self.width < 5 or self.height < 5:
+        if self.width > 25 or self.height > 25:
             raise ValueError(
-                f"Maze dimensions too small ({self.width}x{self.height}).\n"
-                "Minimum allowed is 5x5!"
+                f"Maze dimensions too big ({self.width}x{self.height}). "
+                "Maximum allowed is 5x5!"
             )
         if not self.output_file.endswith(".txt"):
             raise ValueError("Output file should end with .txt")
