@@ -41,7 +41,7 @@ if __name__ == "__main__":
                     prompt = " Press [Q] or [Esc] to exit "
                 else:
                     error_msg = str(e)
-                    prompt = " Adjust config.txt and regenerate [R]. Press [Q] or [Esc] to exit. "
+                    prompt = "Adjust config.txt and regenerate [R]. Press [Q | Esc] to exit."
                 get_error_popup(term, error_msg, prompt)
                 while True:
                     key = term.inkey(timeout=0.1)
