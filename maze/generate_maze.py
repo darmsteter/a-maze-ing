@@ -7,10 +7,24 @@ from .models import Cell, Directions, DIRECTIONS
 
 
 class MazeGenerator:
+    """Generate and modify mazes using different maze generation algorithms."""
+
     def __init__(self) -> None:
+        """Initialize the maze generator."""
+
         self.marked_cells = 0
 
     def create_grid(self, height: int, width: int) -> list[list[Cell]]:
+        """Create a grid of unvisited maze cells.
+
+        Args:
+            height: Number of rows in the maze.
+            width: Number of columns in the maze.
+
+        Returns:
+            A two-dimensional list of Cell objects.
+        """
+
         grid: list[list[Cell]] = []
         for y in range(height):
             row: list[Cell] = []
@@ -25,6 +39,21 @@ class MazeGenerator:
         entry: tuple[int, int],
         exit: tuple[int, int],
     ) -> None:
+        """
+        Add the 42 pattern to the center of the maze.
+
+        The pattern is added only when the maze is large enough. The entry
+        and exit positions cannot overlap with the pattern.
+
+        Args:
+            grid: Maze grid to modify.
+            entry: Coordinates of the maze entry.
+            exit: Coordinates of the maze exit.
+
+        Raises:
+            ConfigurationException: If the entry or exit is inside the 42 pattern.
+        """
+
         if len(grid) < 7 or len(grid[0]) < 9:
             return
         pattern = ["x...xxx", "x.....x", "xxx.xxx", "..x.x..", "..x.xxx"]
@@ -58,6 +87,23 @@ class MazeGenerator:
         algorithm: str,
         callback: Any = None,
     ) -> tuple[list[list[Cell]], str]:
+        """Generate a maze and find a path from its entry to its exit.
+
+    Args:
+        height: Number of rows in the maze.
+        width: Number of columns in the maze.
+        entry: Coordinates of the maze entry.
+        exit: Coordinates of the maze exit.
+        seed: Optional seed used for random generation.
+        perfect: Whether the maze should remain perfect.
+        algorithm: Maze generation algorithm to use.
+        callback: Optional function called with the grid during generation.
+
+    Returns:
+        A tuple containing the generated maze grid and the path from
+        the entry to the exit.
+        """
+
         grid = self.create_grid(height, width)
         self.marked_cells = 0
         self.add_42(grid, entry, exit)
@@ -86,6 +132,14 @@ class MazeGenerator:
     def break_wall(
         self, current: Cell, neighbour: Cell, direction: Directions
     ) -> None:
+        """Remove the wall between two neighbouring cells.
+
+    Args:
+        current: First cell.
+        neighbour: Cell adjacent to the current cell.
+        direction: Direction from the current cell to the neighbour.
+    """
+        
         match direction:
             case Directions.TOP:
                 current.top = 0

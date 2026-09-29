@@ -7,6 +7,18 @@ from errors import ConfigurationException, ConfigurationFileError
 def store_config_value(
     values: dict[ConfigKey, str], key: str, value: str
 ) -> None:
+    """Store a configuration value after validating its key and value.
+
+    Args:
+        values: Dictionary containing parsed configuration values.
+        key: Configuration key as a string.
+        value: Configuration value as a string.
+
+    Raises:
+        ConfigurationException: If the key or value is empty, the key is
+            unknown, or the key has already been defined.
+    """
+    
     if not key:
         raise ConfigurationException(
             "Empty key. " "Expected a key in the format KEY=VALUE."
@@ -32,6 +44,20 @@ def store_config_value(
 
 
 def parse_coordinates(field_name: str, coordinates: str) -> Pair:
+    """Parse a coordinate string into a Pair.
+
+    Args:
+        field_name: Name of the configuration field being parsed.
+        coordinates: Coordinates in the expected ``x,y`` format.
+
+    Returns:
+        A Pair containing the parsed x and y coordinates.
+
+    Raises:
+        ConfigurationException: If the coordinates do not contain exactly
+            two non-empty values or if they are not valid integers.
+    """
+
     split_coordinates = coordinates.split(",")
     if len(split_coordinates) != 2:
         raise ConfigurationException(
@@ -53,6 +79,20 @@ def parse_coordinates(field_name: str, coordinates: str) -> Pair:
 
 
 def parse_config_lines(line: str, values: dict[ConfigKey, str]) -> None:
+    """Parse a single line from the configuration file.
+
+    Empty lines and comments are ignored. Configuration lines must use
+    the ``KEY=VALUE`` format.
+
+    Args:
+        line: A line read from the configuration file.
+        values: Dictionary containing parsed configuration values.
+
+    Raises:
+        ConfigurationException: If the line has an invalid format or
+            contains an invalid configuration key or value.
+    """
+
     line = line.strip()
     if not line.startswith("#") and line != "":
         if "=" not in line:
@@ -67,6 +107,16 @@ def parse_config_lines(line: str, values: dict[ConfigKey, str]) -> None:
 
 
 def validate_required_keys(values: dict[ConfigKey, str]) -> None:
+    """Check that all required configuration keys are present.
+
+    Args:
+        values: Dictionary containing parsed configuration values.
+
+    Raises:
+        ConfigurationException: If one or more required configuration
+            keys are missing.
+    """
+
     missing_keys: list[str] = [
         key.value for key in ConfigKey.required() if key not in values
     ]
@@ -78,6 +128,22 @@ def validate_required_keys(values: dict[ConfigKey, str]) -> None:
 
 
 def build_config(values: dict[ConfigKey, str]) -> Config:
+    """Build and validate a Config object from parsed values.
+
+    Optional configuration values use their default values when they are
+    not present.
+
+    Args:
+        values: Dictionary containing parsed configuration values.
+
+    Returns:
+        A validated Config instance.
+
+    Raises:
+        ConfigurationException: If any configuration value is invalid
+            or cannot be converted to the expected type.
+    """
+
     try:
         entry_coordinate = parse_coordinates(
             ConfigKey.ENTRY, values[ConfigKey.ENTRY]
@@ -127,6 +193,21 @@ def build_config(values: dict[ConfigKey, str]) -> Config:
 
 
 def read_config_file(file_name: str) -> Config:
+    """Read, parse, and validate a maze configuration file.
+
+    Args:
+        file_name: Path to the configuration file.
+
+    Returns:
+        A validated Config instance created from the file contents.
+
+    Raises:
+        ConfigurationFileError: If the configuration file cannot be
+            opened or accessed.
+        ConfigurationException: If the configuration contains invalid
+            data or is missing required keys.
+    """
+
     values: dict[ConfigKey, str] = {}
     try:
         with open(file_name, "r") as config_file:

@@ -3,6 +3,8 @@ from enum import StrEnum
 
 
 class ConfigKey(StrEnum):
+    """Keys used to identify configuration parameters."""
+
     WIDTH = "WIDTH"
     HEIGHT = "HEIGHT"
     ENTRY = "ENTRY"
@@ -14,6 +16,11 @@ class ConfigKey(StrEnum):
 
     @classmethod
     def required(cls) -> tuple["ConfigKey", ...]:
+        """Return configuration keys that are required.
+
+        Returns:
+            A tuple containing all required configuration keys.
+        """
         return (
             cls.WIDTH,
             cls.HEIGHT,
@@ -24,21 +31,29 @@ class ConfigKey(StrEnum):
 
 
 class PerfectEnum(StrEnum):
+    """Possible values for the maze perfection setting."""
+
     TRUE = "True"
     FALSE = "False"
 
 
 class AlgorithmEnum(StrEnum):
+    """Algorithms available for maze generation."""
+
     DFS = "dfs"
     PRIM = "prim"
 
 
 class Pair(BaseModel):
+    """Represent a pair of non-negative integer coordinates."""
+
     x: int = Field(..., ge=0)
     y: int = Field(..., ge=0)
 
 
 class Config(BaseModel):
+    """Store and validate maze generation configuration."""
+
     width: int = Field(..., gt=0)
     height: int = Field(..., gt=0)
     entry: Pair = Field(...)
@@ -50,6 +65,17 @@ class Config(BaseModel):
 
     @model_validator(mode="after")
     def config_check(self) -> "Config":
+        """Validate configuration values that depend on multiple fields.
+
+        Returns:
+            The validated configuration instance.
+
+        Raises:
+            ValueError: If the entry or exit is outside the maze,
+                if they are the same point, if the maze is larger
+                than 25x25, or if the output file is not a TXT file.
+        """
+        
         if self.entry.x >= self.width or self.entry.y >= self.height:
             raise ValueError("Entry should be inside maze.")
         if self.exit.x >= self.width or self.exit.y >= self.height:
