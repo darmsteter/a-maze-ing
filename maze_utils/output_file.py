@@ -1,4 +1,4 @@
-from maze.models import Cell
+from mazegen.models import Cell
 from config.models import Config
 
 

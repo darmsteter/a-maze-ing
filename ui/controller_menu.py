@@ -2,7 +2,7 @@ from blessed import Terminal
 from typing import Callable
 from config.models import Config
 from errors import ActionInterrupted, ConfigurationException
-from maze.models import Cell
+from mazegen.models import Cell
 from ui.themes import EMOJI_THEMES, LINE_THEMES
 
 GenerateFn = Callable[

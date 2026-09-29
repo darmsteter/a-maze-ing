@@ -1,8 +1,7 @@
 import random
 from typing import Any
-from errors import ConfigurationException
+from .errors import MazeGenerationError
 
-from .find_path import find_path
 from .models import Cell, Directions, DIRECTIONS
 
 
@@ -51,8 +50,8 @@ class MazeGenerator:
             exit: Coordinates of the maze exit.
 
         Raises:
-            ConfigurationException:
-                    If the entry or exit is inside the 42 pattern.
+            MazeGenerationError:
+                If the entry or exit is inside the 42 pattern.
         """
 
         if len(grid) < 7 or len(grid[0]) < 9:
@@ -71,9 +70,9 @@ class MazeGenerator:
                 if pattern[y][x] != "x":
                     continue
                 if position == entry:
-                    raise ConfigurationException("Entry cannot be inside 42.")
+                    raise MazeGenerationError("Entry cannot be inside 42.")
                 if position == exit:
-                    raise ConfigurationException("Exit cannot be inside 42.")
+                    raise MazeGenerationError("Exit cannot be inside 42.")
                 grid[start_y + y][start_x + x].is_42 = True
                 self.marked_cells += 1
 
@@ -87,22 +86,21 @@ class MazeGenerator:
         perfect: str,
         algorithm: str,
         callback: Any = None,
-    ) -> tuple[list[list[Cell]], str]:
-        """Generate a maze and find a path from its entry to its exit.
+    ) -> list[list[Cell]]:
+        """Generate a maze using the selected algorithm.
 
-    Args:
-        height: Number of rows in the maze.
-        width: Number of columns in the maze.
-        entry: Coordinates of the maze entry.
-        exit: Coordinates of the maze exit.
-        seed: Optional seed used for random generation.
-        perfect: Whether the maze should remain perfect.
-        algorithm: Maze generation algorithm to use.
-        callback: Optional function called with the grid during generation.
+        Args:
+            height: Number of rows in the maze.
+            width: Number of columns in the maze.
+            entry: Coordinates of the maze entry.
+            exit: Coordinates of the maze exit.
+            seed: Optional seed used for reproducible generation.
+            perfect: Whether the maze should remain perfect.
+            algorithm: Maze generation algorithm to use.
+            callback: Optional function called with the grid during generation.
 
-    Returns:
-        A tuple containing the generated maze grid and the path from
-        the entry to the exit.
+        Returns:
+            The generated maze grid.
         """
 
         grid = self.create_grid(height, width)
@@ -128,7 +126,7 @@ class MazeGenerator:
         if perfect == 'False':
             self.imperfect_maze(grid)
 
-        return grid, find_path(exit, entry, grid)
+        return grid
 
     def break_wall(
         self, current: Cell, neighbour: Cell, direction: Directions

@@ -1,5 +1,4 @@
 from enum import IntEnum
-from config.models import Config
 
 
 class Directions(IntEnum):
@@ -31,8 +30,6 @@ class Cell:
         self.bottom = 1
         self.left = 1
 
-        self.was_visited = 0
-
         self.was_visited = False
         self.is_42 = False
 
@@ -49,32 +46,6 @@ class Cell:
             and self.bottom == 1
             and self.left == 1
         )
-
-    def is_start(self, config: Config) -> bool:
-        """Check whether the cell is the maze entry point.
-
-        Args:
-            config: Maze configuration containing the entry coordinates.
-
-        Returns:
-            True if the cell coordinates match the configured entry point,
-            otherwise False.
-        """
-
-        return self.x == int(config.entry.x) and self.y == int(config.entry.y)
-
-    def is_exit(self, config: Config) -> bool:
-        """Check whether the cell is the maze exit point.
-
-        Args:
-            config: Maze configuration containing the exit coordinates.
-
-        Returns:
-            True if the cell coordinates match the configured exit point,
-            otherwise False.
-        """
-
-        return self.x == int(config.exit.x) and self.y == int(config.exit.y)
 
 
 def create_grid(height: int, width: int) -> list[list[Cell]]:

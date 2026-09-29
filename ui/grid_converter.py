@@ -1,5 +1,6 @@
 from config.models import Config
-from maze.models import Cell
+from mazegen.models import Cell
+from .cell_helpers import is_start, is_exit
 
 
 def to_display_grid(
@@ -48,9 +49,9 @@ def to_display_grid(
 
             if is_42:
                 display_grid[render_y][render_x] = "4"
-            elif current_cell.is_start(config):
+            elif is_start(current_cell, config):
                 display_grid[render_y][render_x] = "S"
-            elif current_cell.is_exit(config):
+            elif is_exit(current_cell, config):
                 display_grid[render_y][render_x] = "E"
             else:
                 display_grid[render_y][render_x] = " "

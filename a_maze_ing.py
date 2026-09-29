@@ -2,8 +2,10 @@ import sys
 from blessed import Terminal
 from config import read_config_file
 from errors import ConfigurationException, ConfigurationFileError
-from maze.generate_maze import MazeGenerator
-from maze.output_file import generate_output_file
+from maze_utils.find_path import find_path
+from mazegen.errors import MazeGenerationError
+from mazegen.generate_maze import MazeGenerator
+from maze_utils.output_file import generate_output_file
 from ui import get_error_popup, initialize_graphics, to_display_grid
 
 if __name__ == "__main__":
@@ -22,7 +24,7 @@ if __name__ == "__main__":
             try:
                 config = read_config_file(config_file)
                 generator = MazeGenerator()
-                grid, path = generator.generate(
+                grid = generator.generate(
                     config.height,
                     config.width,
                     (config.entry.x, config.entry.y),
@@ -31,8 +33,12 @@ if __name__ == "__main__":
                     config.perfect,
                     str(config.algorithm),
                 )
+                path = find_path(
+                    (config.exit.x, config.exit.y),
+                    (config.entry.x, config.entry.y),
+                    grid)
                 break
-            except (ConfigurationFileError, ConfigurationException) as e:
+            except (ConfigurationFileError, ConfigurationException, MazeGenerationError) as e:
                 print(f"Configuration error: {e}")
                 if isinstance(e, ConfigurationFileError):
                     error_msg = (

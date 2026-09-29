@@ -8,9 +8,11 @@ from errors import (
     ConfigurationException,
     ConfigurationFileError,
 )
-from maze.models import Cell
-from maze.generate_maze import MazeGenerator
-from maze.output_file import generate_output_file
+from mazegen.models import Cell
+from mazegen.generate_maze import MazeGenerator
+from mazegen.errors import MazeGenerationError
+from maze_utils.find_path import find_path
+from maze_utils.output_file import generate_output_file
 
 from ui.controller_menu import handle_input
 from ui.grid_converter import to_display_grid
@@ -150,7 +152,7 @@ def initialize_graphics(
 
                 callback_fn = animation_step_callback if animate else None
 
-                new_grid, new_path = maze_generator.generate(
+                new_grid = maze_generator.generate(
                     new_config.height,
                     new_config.width,
                     (new_config.entry.x, new_config.entry.y),
@@ -160,9 +162,14 @@ def initialize_graphics(
                     str(new_config.algorithm),
                     callback=callback_fn,
                 )
+                new_path = find_path(
+                    (new_config.exit.x, new_config.exit.y),
+                    (new_config.entry.x, new_config.entry.y),
+                    new_grid
+                )
                 generate_output_file(new_grid, new_config, new_path)
                 break
-            except (ConfigurationFileError, ConfigurationException) as e:
+            except (ConfigurationFileError, ConfigurationException, MazeGenerationError) as e:
                 session_state["needs_screen_clear"] = True
                 get_error_popup(term, str(e))
                 while True:

@@ -1,7 +1,7 @@
 from heapq import heappush, heappop
 from typing import Callable
 
-from maze.models import Cell, DIRECTIONS
+from mazegen.models import Cell, DIRECTIONS
 
 
 def maze_counter() -> Callable[[], int]:

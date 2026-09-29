@@ -3,8 +3,9 @@ from blessed import Terminal
 
 from config.models import Config
 from errors import ActionInterrupted
-from maze.models import Cell
+from mazegen.models import Cell
 from ui.themes import get_rendered_line
+from ui.cell_helpers import is_exit, is_start
 
 
 def buid_maze_frame_and_title(
@@ -209,11 +210,11 @@ def build_line_maze_buffer(
 
             if is_42:
                 rendered_line = pattern_42_rendered_line
-            elif cell.is_start(config):
+            elif is_start(cell, config):
                 rendered_line = get_rendered_line(
                     term, "start", theme_name, mode="line"
                 )
-            elif cell.is_exit(config):
+            elif is_exit(cell, config):
                 rendered_line = get_rendered_line(
                     term, "exit", theme_name, mode="line"
                 )
@@ -373,7 +374,7 @@ def render_solution_path(
         mid_y = (prev_render_y + curr_render_y) // 2
         render_path_step(mid_x, mid_y)
 
-        if not grid[current_y][current_x].is_exit(config):
+        if not is_exit(grid[current_y][current_x], config):
             render_path_step(curr_render_x, curr_render_y)
 
 
