@@ -107,7 +107,7 @@ def get_rendered_line(
         A formatted string rendered according to the selected theme
         and element type.
     """
-    
+
     themes_dict = EMOJI_THEMES if mode == "emoji" else LINE_THEMES
     default_theme = "tree_garden" if mode == "emoji" else "green"
 

@@ -58,7 +58,7 @@ def create_grid(height: int, width: int) -> list[list[Cell]]:
     Returns:
         A two-dimensional list containing initialized Cell objects.
     """
-    
+
     grid: list[list[Cell]] = []
 
     for y in range(height):

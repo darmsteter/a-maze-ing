@@ -16,7 +16,12 @@ from maze_utils.output_file import generate_output_file
 
 from ui.controller_menu import handle_input
 from ui.grid_converter import to_display_grid
-from ui.renderers import render_all, get_error_popup
+from ui.renderers import (
+    render_all,
+    get_error_popup,
+    has_pattern_42,
+    show_no_42_popup,
+)
 from ui.solution import get_solution_coordinates
 
 
@@ -131,8 +136,8 @@ def initialize_graphics(
         Args:
             active_config: Current maze configuration.
             animate: Whether to display the maze generation animation.
-            reuse_currentent_config: Whether to reuse the provided configuration
-                instead of reading it from the configuration file.
+            reuse_currentent_config: Whether to reuse the provided
+            configuration instead of reading it from the configuration file.
 
         Returns:
             A tuple containing the generated maze grid, its configuration,
@@ -255,6 +260,8 @@ def initialize_graphics(
         )
 
     with term.fullscreen(), term.raw(), term.hidden_cursor():
+        if not has_pattern_42(grid):
+            show_no_42_popup(term)
         refresh_ui_view(
             grid,
             display_grid,
