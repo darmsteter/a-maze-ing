@@ -18,7 +18,6 @@ if __name__ == "__main__":
 
     config_file = sys.argv[1]
     term = Terminal()
-
     with term.fullscreen(), term.raw(), term.hidden_cursor():
         while True:
             try:

@@ -209,7 +209,6 @@ def initialize_graphics(
                             flush=True,
                         )
                         break
-
         new_display_grid = to_display_grid(
             new_grid, new_config.width, new_config.height, new_config
         )
