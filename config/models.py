@@ -59,7 +59,7 @@ class Config(BaseModel):
         if self.width > 25 or self.height > 25:
             raise ValueError(
                 f"Maze dimensions too big ({self.width}x{self.height}). "
-                "Maximum allowed is 5x5!"
+                "Maximum allowed is 25x25!"
             )
         if not self.output_file.endswith(".txt"):
             raise ValueError("Output file should end with .txt")
