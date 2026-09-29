@@ -65,7 +65,7 @@ def initialize_graphics(
             ActionInterrupted: If the user presses a supported control key
                 during maze generation.
         """
-            
+
         if session_state.get("needs_screen_clear", False):
             print(str(term.home) + str(term.clear), end="", flush=True)
             session_state["needs_screen_clear"] = False
@@ -129,7 +129,7 @@ def initialize_graphics(
             SystemExit: If the user chooses to exit while an invalid
                 configuration is being handled.
         """
-            
+
         MIN_WIDTH_FOR_42 = 7
         MIN_HEIGHT_FOR_42 = 9
 
@@ -230,7 +230,7 @@ def initialize_graphics(
             current_path: Path from the maze entry to the exit.
             animate: Whether to animate the displayed solution path.
         """
-            
+
         session_state["theme_name"] = current_theme
         session_state["mode"] = current_mode
         active_path = current_path if current_path else session_state["path"]
