@@ -13,7 +13,7 @@ def generate_output_file(
             entry coordinates, and exit coordinates.
         path: String describing the path from the entry to the exit.
     """
-    
+
     with open(config.output_file, "w") as output_file:
         for y in range(len(grid)):
             for x in range(len(grid[y])):

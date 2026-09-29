@@ -90,19 +90,19 @@ class MazeGenerator:
     ) -> tuple[list[list[Cell]], str]:
         """Generate a maze and find a path from its entry to its exit.
 
-    Args:
-        height: Number of rows in the maze.
-        width: Number of columns in the maze.
-        entry: Coordinates of the maze entry.
-        exit: Coordinates of the maze exit.
-        seed: Optional seed used for random generation.
-        perfect: Whether the maze should remain perfect.
-        algorithm: Maze generation algorithm to use.
-        callback: Optional function called with the grid during generation.
+        Args:
+            height: Number of rows in the maze.
+            width: Number of columns in the maze.
+            entry: Coordinates of the maze entry.
+            exit: Coordinates of the maze exit.
+            seed: Optional seed used for random generation.
+            perfect: Whether the maze should remain perfect.
+            algorithm: Maze generation algorithm to use.
+            callback: Optional function called with the grid during generation.
 
-    Returns:
-        A tuple containing the generated maze grid and the path from
-        the entry to the exit.
+        Returns:
+            A tuple containing the generated maze grid and the path from
+            the entry to the exit.
         """
 
         grid = self.create_grid(height, width)
@@ -125,7 +125,7 @@ class MazeGenerator:
             self._generate_prim(grid, cell, callback=callback)
         else:
             self._generate_dfs(grid, cell, callback=callback)
-        if perfect == 'False':
+        if perfect == "False":
             self.imperfect_maze(grid)
 
         return grid, find_path(exit, entry, grid)
@@ -135,11 +135,11 @@ class MazeGenerator:
     ) -> None:
         """Remove the wall between two neighbouring cells.
 
-    Args:
-        current: First cell.
-        neighbour: Cell adjacent to the current cell.
-        direction: Direction from the current cell to the neighbour.
-    """
+        Args:
+            current: First cell.
+            neighbour: Cell adjacent to the current cell.
+            direction: Direction from the current cell to the neighbour.
+        """
 
         match direction:
             case Directions.TOP:
@@ -192,9 +192,10 @@ class MazeGenerator:
             visited: Required visited state of the neighbours.
 
         Returns:
-            A dictionary mapping each available direction to its neighbouring cell.
+            A dictionary mapping each available
+            direction to its neighbouring cell.
         """
-            
+
         neighbours: dict[Directions, Cell] = {}
         for direction, dir_x, dir_y in DIRECTIONS:
             x = cell.x + dir_x

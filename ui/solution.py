@@ -41,7 +41,7 @@ def get_solution_coordinates(
         A list of coordinates along the solution path. Returns an empty
         list if the solution path is empty.
     """
-    
+
     if solution_str:
         entry_pos = (int(config.entry.x), int(config.entry.y))
         return parse_path_to_coords(entry_pos, solution_str)

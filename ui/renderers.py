@@ -448,6 +448,25 @@ def get_error_popup(
     print("".join(buffer), flush=True)
 
 
+def has_pattern_42(grid: list[list[Cell]]) -> bool:
+    return any(getattr(cell, "is_42", False) for row in grid for cell in row)
+
+
+def show_no_42_popup(term: Terminal, duration: float = 2.0) -> None:
+    msg = " Maze too small: no 42 pattern "
+    x = max(0, (term.width - len(msg)) // 2)
+    y = term.height // 2
+
+    print(str(term.home) + str(term.clear), end="", flush=True)
+    print(
+        term.move_xy(x, y) + term.bold_black_on_darkgoldenrod1(msg),
+        end="",
+        flush=True,
+    )
+    term.inkey(timeout=duration)
+    print(str(term.home) + str(term.clear), end="", flush=True)
+
+
 def render_all(
     term: Terminal,
     config: Config,

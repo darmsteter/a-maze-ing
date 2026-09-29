@@ -19,7 +19,7 @@ def to_display_grid(
     Returns:
         A two-dimensional list of strings representing the maze for display.
     """
-    
+
     display_width = width * 2 + 1
     display_height = height * 2 + 1
     display_grid = [

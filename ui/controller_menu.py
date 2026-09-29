@@ -151,8 +151,8 @@ def handle_input(
             display grid for emoji mode.
         path: Current path from the maze entry to the exit.
     """
-    
-    from ui.renderers import get_error_popup
+
+    from ui.renderers import get_error_popup, has_pattern_42, show_no_42_popup
 
     SUPPORTED_ACTION_KEYS = {
         "a",
@@ -215,6 +215,8 @@ def handle_input(
                             grid, config.width, config.height, config
                         )
                     show_solution = False
+                    if not has_pattern_42(grid):
+                        show_no_42_popup(term)
                     refresh_ui_view_fn(
                         grid,
                         display_grid,
