@@ -1,15 +1,16 @@
 import textwrap
 from blessed import Terminal
+
 from config.models import Config
 from errors import ActionInterrupted
 from maze.models import Cell
-from ui.themes import get_tile
+from ui.themes import get_rendered_line
 
 
-def get_maze_frame_and_title(
+def buid_maze_frame_and_title(
     term: Terminal,
-    frame_w: int,
-    frame_h: int,
+    frame_width: int,
+    frame_height: int,
     offset_x: int,
     offset_y: int,
     title: str = "A_MAZE_ING GAME",
@@ -18,70 +19,61 @@ def get_maze_frame_and_title(
     bg_style = term.on_gray10
     wall_style = term.bold_darkgreen
 
-    top_bdr = term.bold("╔") + term.bold("═") * (frame_w - 2) + term.bold("╗")
+    top_border = (
+        term.bold("╔") + term.bold("═") * (frame_width - 2) + term.bold("╗")
+    )
     buffer.append(
-        term.move_xy(offset_x, offset_y) + term.bold_darkgreen(top_bdr)
+        term.move_xy(offset_x, offset_y) + term.bold_darkgreen(top_border)
     )
 
-    title_x = max(1, (frame_w - 2 - len(title)) // 2)
-    right_pad = max(0, frame_w - 2 - len(title) - title_x)
+    title_left_padding = max(1, (frame_width - 2 - len(title)) // 2)
+    title_right_padding = max(
+        0, frame_width - 2 - len(title) - title_left_padding
+    )
     title_raw = (
         term.move_xy(offset_x, offset_y + 1)
         + wall_style("║")
-        + bg_style(" " * title_x)
+        + bg_style(" " * title_left_padding)
         + bg_style(term.bold_turquoise1(title))
-        + bg_style(" " * right_pad)
+        + bg_style(" " * title_right_padding)
         + wall_style("║")
     )
     buffer.append(title_raw)
-    #     term.move_xy(offset_x, offset_y + 1) + term.bold_darkgreen("║")
-    # )
-    # buffer.append(
-    #     term.move_xy(title_x, offset_y + 1) + term.bold_turquoise1(title)
-    # )
-    # buffer.append(
-    #     term.move_xy(offset_x + frame_w - 1, offset_y + 1)
-    #     + term.bold_darkgreen("║")
-    # )
-
-    title_bdr = (
-        term.bold("╠") + term.bold("═") * (frame_w - 2) + term.bold("╣")
+    title_divider_border = (
+        term.bold("╠") + term.bold("═") * (frame_width - 2) + term.bold("╣")
     )
     buffer.append(
-        term.move_xy(offset_x, offset_y + 2) + term.bold_darkgreen(title_bdr)
+        term.move_xy(offset_x, offset_y + 2)
+        + term.bold_darkgreen(title_divider_border)
     )
-    for y in range(3, frame_h - 3):
+    for current_row_chars in range(3, frame_height - 3):
         buffer.append(
-            term.move_xy(offset_x, offset_y + y)
+            term.move_xy(offset_x, offset_y + current_row_chars)
             + wall_style("║")
-            + bg_style(" " * (frame_w - 2))
+            + bg_style(" " * (frame_width - 2))
             + wall_style("║")
         )
 
-    menu_bdr = term.bold("╠") + term.bold("═") * (frame_w - 2) + term.bold("╣")
+    menu_divider_border = (
+        term.bold("╠") + term.bold("═") * (frame_width - 2) + term.bold("╣")
+    )
     buffer.append(
-        term.move_xy(offset_x, offset_y + frame_h - 3) + wall_style(menu_bdr))
-    # buffer.append(
-    #     term.move_xy(offset_x, offset_y + frame_h - 2)
-    #     + term.bold_darkgreen("║")
-    # )
-    # buffer.append(
-    #     term.move_xy(offset_x + frame_w - 1, offset_y + frame_h - 2)
-    #     + term.bold_darkgreen("║")
-    # )
+        term.move_xy(offset_x, offset_y + frame_height - 3)
+        + wall_style(menu_divider_border)
+    )
     buffer.append(
-        term.move_xy(offset_x, offset_y + frame_h - 2)
+        term.move_xy(offset_x, offset_y + frame_height - 2)
         + wall_style("║")
-        + bg_style(" " * (frame_w - 2))
+        + bg_style(" " * (frame_width - 2))
         + wall_style("║")
     )
 
-    bottom_bdr = (
-        term.bold("╚") + term.bold("═") * (frame_w - 2) + term.bold("╝")
+    bottom_border = (
+        term.bold("╚") + term.bold("═") * (frame_width - 2) + term.bold("╝")
     )
     buffer.append(
-        term.move_xy(offset_x, offset_y + frame_h - 1)
-        + wall_style(bottom_bdr)
+        term.move_xy(offset_x, offset_y + frame_height - 1)
+        + wall_style(bottom_border)
     )
 
     return buffer
@@ -101,31 +93,39 @@ def render_frame(
         and len(display_grid) > 0
         and len(display_grid[0]) > 0
     ):
-        inner_w = len(display_grid[0]) * 2
-        inner_h = len(display_grid)
+        content_width = len(display_grid[0]) * 2
+        content_height = len(display_grid)
     else:
-        inner_w = (
+        content_width = (
             (len(grid[0]) * 2 + 1) * 2 if grid else (config.width * 2 + 1) * 2
         )
-        inner_h = len(grid) * 2 + 1 if grid else config.height * 2 + 1
+        content_height = len(grid) * 2 + 1 if grid else config.height * 2 + 1
 
-    frame_w = max(inner_w + 4, 99)
-    frame_h = inner_h + 6
+    frame_width = max(content_width + 4, 99)
+    frame_height = content_height + 6
 
-    offset_x = max(0, (term.width - frame_w) // 2)
-    offset_y = max(0, (term.height - frame_h) // 2)
+    offset_x = max(0, (term.width - frame_width) // 2)
+    offset_y = max(0, (term.height - frame_height) // 2)
 
-    buffer = get_maze_frame_and_title(
-        term, frame_w, frame_h, offset_x, offset_y, title=title
+    buffer = buid_maze_frame_and_title(
+        term, frame_width, frame_height, offset_x, offset_y, title=title
     )
 
-    maze_x = offset_x + (frame_w - inner_w) // 2
-    maze_y = offset_y + 3
+    maze_start_x = offset_x + (frame_width - content_width) // 2
+    maze_start_y = offset_y + 3
 
-    return buffer, maze_x, maze_y, inner_h, frame_w, offset_x, offset_y
+    return (
+        buffer,
+        maze_start_x,
+        maze_start_y,
+        content_height,
+        frame_width,
+        offset_x,
+        offset_y,
+    )
 
 
-def get_maze_lines(
+def build_line_maze_buffer(
     term: Terminal,
     grid: list[list[Cell]],
     config: Config,
@@ -133,55 +133,73 @@ def get_maze_lines(
     offset_x: int,
     offset_y: int,
 ) -> list[str]:
-    wall_tile = get_tile(term, "wall", theme_name, mode="line")
-    path_tile = get_tile(term, "path", theme_name, mode="line")
-    pattern_42_tile = get_tile(term, "pattern_42", theme_name, mode="line")
+    wall_rendered_line = get_rendered_line(
+        term, "wall", theme_name, mode="line"
+    )
+    path_rendered_line = get_rendered_line(
+        term, "path", theme_name, mode="line"
+    )
+    pattern_42_rendered_line = get_rendered_line(
+        term, "pattern_42", theme_name, mode="line"
+    )
 
     buffer = []
 
-    for y, row in enumerate(grid):
-        top_line = wall_tile
-        mid_line = wall_tile
+    for cell_y, row_chars in enumerate(grid):
+        top_line = wall_rendered_line
+        mid_line = wall_rendered_line
 
-        for x, cell in enumerate(row):
+        for cell_x, cell in enumerate(row_chars):
             is_42 = getattr(cell, "is_42", False)
-            top_is_42 = y > 0 and getattr(grid[y - 1][x], "is_42", False)
-            right_is_42 = x < len(row) - 1 and getattr(
-                grid[y][x + 1], "is_42", False
+            top_neighbor_is_42 = cell_y > 0 and getattr(
+                grid[cell_y - 1][cell_x], "is_42", False
             )
-            if is_42 and top_is_42:
-                top_wall = pattern_42_tile
+            right_neighbor_is_42 = cell_x < len(row_chars) - 1 and getattr(
+                grid[cell_y][cell_x + 1], "is_42", False
+            )
+            if is_42 and top_neighbor_is_42:
+                top_wall = pattern_42_rendered_line
             else:
-                top_wall = wall_tile if cell.top else path_tile
+                top_wall = (
+                    wall_rendered_line if cell.top else path_rendered_line
+                )
 
             if is_42:
-                tile = pattern_42_tile
+                rendered_line = pattern_42_rendered_line
             elif cell.is_start(config):
-                tile = get_tile(term, "start", theme_name, mode="line")
+                rendered_line = get_rendered_line(
+                    term, "start", theme_name, mode="line"
+                )
             elif cell.is_exit(config):
-                tile = get_tile(term, "exit", theme_name, mode="line")
+                rendered_line = get_rendered_line(
+                    term, "exit", theme_name, mode="line"
+                )
             else:
-                tile = path_tile
+                rendered_line = path_rendered_line
 
-            if is_42 and right_is_42:
-                right_wall = pattern_42_tile
+            if is_42 and right_neighbor_is_42:
+                right_wall = pattern_42_rendered_line
             else:
-                right_wall = wall_tile if cell.right else path_tile
+                right_wall = (
+                    wall_rendered_line if cell.right else path_rendered_line
+                )
 
-            top_line += top_wall + wall_tile
-            mid_line += tile + right_wall
+            top_line += top_wall + wall_rendered_line
+            mid_line += rendered_line + right_wall
 
-        buffer.append(term.move_xy(offset_x, offset_y + y * 2) + top_line)
-        buffer.append(term.move_xy(offset_x, offset_y + y * 2 + 1) + mid_line)
+        buffer.append(term.move_xy(offset_x, offset_y + cell_y * 2) + top_line)
+        buffer.append(
+            term.move_xy(offset_x, offset_y + cell_y * 2 + 1) + mid_line
+        )
 
-    bottom_line = wall_tile * (len(grid[0]) * 2 + 1)
+    bottom_line = wall_rendered_line * (len(grid[0]) * 2 + 1)
     buffer.append(
         term.move_xy(offset_x, offset_y + len(grid) * 2) + bottom_line
     )
     return buffer
 
 
-def get_maze_emojis(
+def build_emoji_maze_buffer(
     term: Terminal,
     display_grid: list[list[str]],
     theme_name: str,
@@ -190,28 +208,38 @@ def get_maze_emojis(
 ) -> list[str]:
     buffer = []
 
-    for y, row in enumerate(display_grid):
-        tile = ""
-        for char in row:
+    for row, row_chars in enumerate(display_grid):
+        rendered_line = ""
+        for char in row_chars:
             if char == "4":
-                tile += get_tile(term, "pattern_42", theme_name, mode="emoji")
+                rendered_line += get_rendered_line(
+                    term, "pattern_42", theme_name, mode="emoji"
+                )
             elif char == "W":
-                tile += get_tile(term, "wall", theme_name, mode="emoji")
+                rendered_line += get_rendered_line(
+                    term, "wall", theme_name, mode="emoji"
+                )
             elif char == "S":
-                tile += get_tile(term, "start", theme_name, mode="emoji")
+                rendered_line += get_rendered_line(
+                    term, "start", theme_name, mode="emoji"
+                )
             elif char == "E":
-                tile += get_tile(term, "exit", theme_name, mode="emoji")
+                rendered_line += get_rendered_line(
+                    term, "exit", theme_name, mode="emoji"
+                )
             else:
-                tile += get_tile(term, "path", theme_name, mode="emoji")
+                rendered_line += get_rendered_line(
+                    term, "path", theme_name, mode="emoji"
+                )
 
-        buffer.append(term.move_xy(offset_x, offset_y + y) + tile)
+        buffer.append(term.move_xy(offset_x, offset_y + row) + rendered_line)
 
     return buffer
 
 
-def get_solution_str(
+def render_solution_path(
     term: Terminal,
-    path: list[tuple[int, int]],
+    path_coordinates: list[tuple[int, int]],
     grid: list[list[Cell]],
     config: Config,
     theme_name: str,
@@ -221,45 +249,63 @@ def get_solution_str(
     animate: bool = False,
     delay: float = 0.05,
 ) -> None:
-    if not path:
+    if not path_coordinates:
         return
 
-    sol_tile = get_tile(term, "solution_path", theme_name, mode=mode)
-    start = int(config.entry.x), int(config.entry.y)
-    full_path = [start] + path
+    solution_tile = get_rendered_line(
+        term, "solution_path", theme_name, mode=mode
+    )
+    start_coordinates = int(config.entry.x), int(config.entry.y)
+    full_solution_path = [start_coordinates] + path_coordinates
 
-    allowed_keys = {"a", "q", "r", "s", "t", "m", "KEY_RESIZE", "KEY_ESCAPE"}
+    supported_action_keys = {
+        "a",
+        "q",
+        "r",
+        "s",
+        "t",
+        "m",
+        "KEY_RESIZE",
+        "KEY_ESCAPE",
+    }
 
-    def get_step(x: int, y: int) -> None:
+    def render_path_step(x: int, y: int) -> None:
         print(
-            term.move_xy(offset_x + x * 2, offset_y + y) + sol_tile, flush=True
+            term.move_xy(offset_x + x * 2, offset_y + y) + solution_tile,
+            flush=True,
         )
         if animate:
-            key = term.inkey(timeout=delay)
-            if key:
-                key_code = key.name if key.is_sequence else key.lower()
-                if key_code in allowed_keys:
-                    raise ActionInterrupted(key_code)
+            pressed_key = term.inkey(timeout=delay)
+            if pressed_key:
+                if pressed_key.is_sequence and pressed_key.name is not None:
+                    key_identifier = pressed_key.name
+                else:
+                    key_identifier = pressed_key.lower()
 
-    for i in range(1, len(full_path)):
-        prev_x, prev_y = full_path[i - 1]
-        curr_x, curr_y = full_path[i]
+                if key_identifier in supported_action_keys:
+                    raise ActionInterrupted(key_identifier)
 
-        p_x, p_y = prev_x * 2 + 1, prev_y * 2 + 1
-        c_x, c_y = curr_x * 2 + 1, curr_y * 2 + 1
+    for path_index in range(1, len(full_solution_path)):
+        previous_x, previous_y = full_solution_path[path_index - 1]
+        current_x, current_y = full_solution_path[path_index]
 
-        mid_x = (p_x + c_x) // 2
-        mid_y = (p_y + c_y) // 2
-        get_step(mid_x, mid_y)
+        prev_render_x, prev_render_y = previous_x * 2 + 1, previous_y * 2 + 1
+        curr_render_x, curr_render_y = current_x * 2 + 1, current_y * 2 + 1
 
-        if not grid[curr_y][curr_x].is_exit(config):
-            get_step(c_x, c_y)
+        mid_x = (prev_render_x + curr_render_x) // 2
+        mid_y = (prev_render_y + curr_render_y) // 2
+        render_path_step(mid_x, mid_y)
+
+        if not grid[current_y][current_x].is_exit(config):
+            render_path_step(curr_render_x, curr_render_y)
 
 
 def get_error_popup(
     term: Terminal,
     error_msg: str,
-    prompt_raw: str = "Adjust config.txt and regenerate [R]. Press [Q | Esc] to exit.",
+    prompt_text: str = (
+        "Adjust config.txt and regenerate [R]. Press [Q | Esc] to exit."
+    ),
 ) -> None:
     popup_w = 64
     popup_h = 9
@@ -273,9 +319,10 @@ def get_error_popup(
 
     buffer = [str(term.home) + str(term.clear)]
 
-    for i in range(popup_h):
+    for row_index in range(popup_h):
         buffer.append(
-            term.move_xy(start_x, start_y + i) + bg_color(" " * popup_w)
+            term.move_xy(start_x, start_y + row_index)
+            + bg_color(" " * popup_w)
         )
 
     top_border = border_color("╔" + "═" * (popup_w - 2) + "╗")
@@ -292,22 +339,25 @@ def get_error_popup(
 
     title_raw = " CONFIGURATION ERROR "
     title = term.blink_bold_black_on_indianred2(title_raw)
-    title_x = start_x + (popup_w - len(title_raw)) // 2
-    buffer.append(term.move_xy(title_x, start_y) + title)
+    title_left_padding = start_x + (popup_w - len(title_raw)) // 2
+    buffer.append(term.move_xy(title_left_padding, start_y) + title)
 
     clean_msg = term.strip_seqs(error_msg)
     wrapped_lines = textwrap.wrap(clean_msg, width=popup_w - 6)
-    for idx, line in enumerate(wrapped_lines[:4]):
-        line_x = start_x + (popup_w - len(line)) // 2
+    for index_line, line_str in enumerate(wrapped_lines[:4]):
+        line_x = start_x + (popup_w - len(line_str)) // 2
         buffer.append(
-            term.move_xy(line_x, start_y + 2 + idx)
-            + bg_color(text_color(line))
+            term.move_xy(line_x, start_y + 2 + index_line)
+            + bg_color(text_color(line_str))
         )
 
-    prompt = term.bold_gray100(prompt_raw)
-    prompt_x = start_x + (popup_w - len(term.strip_seqs(prompt))) // 2
+    formatted_prompt = term.bold_gray100(prompt_text)
+    prompt_x = (
+        start_x + (popup_w - len(term.strip_seqs(formatted_prompt))) // 2
+    )
     buffer.append(
-        term.move_xy(prompt_x, start_y + popup_h - 2) + bg_color(prompt)
+        term.move_xy(prompt_x, start_y + popup_h - 2)
+        + bg_color(formatted_prompt)
     )
 
     print("".join(buffer), flush=True)
@@ -320,7 +370,7 @@ def render_all(
     theme_name: str,
     mode: str,
     show_solution: bool,
-    solution_coords: list[tuple[int, int]],
+    solution_coordinates: list[tuple[int, int]],
     display_grid: list[list[str]],
     animate_path: bool = False,
 ) -> None:
@@ -331,55 +381,61 @@ def render_all(
 
     main_buff: list[str] = [str(term.home)]
 
-    frame_buff, maze_x, maze_y, inner_h, frame_w, offset_x, offset_y = (
-        render_frame(term, config, grid, mode, display_grid)
-    )
+    (
+        frame_buff,
+        maze_start_x,
+        maze_start_y,
+        content_height,
+        frame_width,
+        offset_x,
+        offset_y,
+    ) = render_frame(term, config, grid, mode, display_grid)
     main_buff.extend(frame_buff)
 
     if mode == "emoji":
         main_buff.extend(
-            get_maze_emojis(
+            build_emoji_maze_buffer(
                 term,
                 display_grid,
                 theme_name,
-                offset_x=maze_x,
-                offset_y=maze_y,
+                offset_x=maze_start_x,
+                offset_y=maze_start_y,
             )
         )
     else:
         main_buff.extend(
-            get_maze_lines(
+            build_line_maze_buffer(
                 term,
                 grid,
                 config,
                 theme_name,
-                offset_x=maze_x,
-                offset_y=maze_y,
+                offset_x=maze_start_x,
+                offset_y=maze_start_y,
             )
         )
     print("".join(main_buff), flush=True)
 
-    menu_y = offset_y + inner_h + 4
+    menu_y = offset_y + content_height + 4
     draw_controller_menu(
         term,
-        x=offset_x,
-        y=menu_y,
+        offset_x,
+        menu_y,
         show_solution=show_solution,
         theme_name=theme_name,
         mode=mode,
-        frame_w=frame_w,
+        frame_width=frame_width,
     )
 
-    if show_solution and solution_coords:
-        get_solution_str(
+    if show_solution and solution_coordinates:
+        render_solution_path(
             term,
-            solution_coords,
+            solution_coordinates,
             grid,
             config,
             theme_name,
             mode=mode,
-            offset_x=maze_x,
-            offset_y=maze_y,
+            offset_x=maze_start_x,
+            offset_y=maze_start_y,
             animate=animate_path,
             delay=0.03,
         )

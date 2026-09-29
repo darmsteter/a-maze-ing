@@ -17,7 +17,7 @@ def parse_path_to_coords(
     return coords
 
 
-def get_solution_coords(
+def get_solution_coordinates(
     config: Config, solution_str: str
 ) -> list[tuple[int, int]]:
     if solution_str:
