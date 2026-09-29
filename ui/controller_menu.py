@@ -290,4 +290,4 @@ def handle_input(
                     False,
                 )
         except ActionInterrupted as e:
-            queued_input_key = e.key_code
+            queued_input_key = e.action_key

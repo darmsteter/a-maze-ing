@@ -458,7 +458,8 @@ def render_all(
     solution_coordinates: list[tuple[int, int]],
     display_grid: list[list[str]],
     animate_path: bool = False,
-) -> None:
+    draw_frame: bool = True,
+) -> bool:
     """Render the complete maze interface.
 
     This includes the maze frame, maze contents, controller menu,
@@ -475,13 +476,14 @@ def render_all(
         display_grid: Formatted grid used in emoji mode.
         animate_path: Whether to animate the solution path.
     """
-    
+
     from .controller_menu import check_terminal_size, draw_controller_menu
 
     if not check_terminal_size(term, mode, display_grid, grid):
-        return
+        return False
 
     main_buff: list[str] = [str(term.home)]
+
     (
         frame_buff,
         maze_start_x,
@@ -491,7 +493,8 @@ def render_all(
         offset_x,
         offset_y,
     ) = render_frame(term, config, grid, mode, display_grid)
-    main_buff.extend(frame_buff)
+    if draw_frame:
+        main_buff.extend(frame_buff)
 
     if mode == "emoji":
         main_buff.extend(
@@ -515,17 +518,16 @@ def render_all(
             )
         )
     print("".join(main_buff), flush=True)
-
-    menu_y = offset_y + content_height + 4
-    draw_controller_menu(
-        term,
-        offset_x,
-        menu_y,
-        show_solution=show_solution,
-        theme_name=theme_name,
-        mode=mode,
-        frame_width=frame_width,
-    )
+    if draw_frame:
+        draw_controller_menu(
+            term,
+            offset_x,
+            offset_y + content_height + 4,
+            show_solution=show_solution,
+            theme_name=theme_name,
+            mode=mode,
+            frame_width=frame_width,
+        )
 
     if show_solution and solution_coordinates:
         render_solution_path(
@@ -540,3 +542,4 @@ def render_all(
             animate=animate_path,
             delay=0.03,
         )
+    return True

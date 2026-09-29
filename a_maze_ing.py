@@ -13,26 +13,15 @@ if __name__ == "__main__":
             "python3 a_maze_ing.py file_name.txt"
         )
         exit()
+
     config_file = sys.argv[1]
     term = Terminal()
-    MIN_WIDTH_FOR_42 = 7
-    MIN_HEIGHT_FOR_42 = 9
+
     with term.fullscreen(), term.raw(), term.hidden_cursor():
         while True:
             try:
                 config = read_config_file(config_file)
                 generator = MazeGenerator()
-                if (
-                    config.width < MIN_WIDTH_FOR_42
-                    or config.height < MIN_HEIGHT_FOR_42
-                ):
-                    get_error_popup(
-                        term,
-                        "Maze too small to render '42' pattern!",
-                        prompt_text=term.blink("Loading maze..."),
-                    )
-                    term.inkey(timeout=1.5)
-                    print(str(term.home) + str(term.clear), end="", flush=True)
                 grid, path = generator.generate(
                     config.height,
                     config.width,
@@ -54,15 +43,17 @@ if __name__ == "__main__":
                     prompt = " Press [Q] or [Esc] to exit "
                 else:
                     error_msg = str(e)
-                    prompt = ("Adjust config.txt and press [R]-> Regenerate"
-                              "or [Q|Esc]-> Exit.")
+                    prompt = (
+                        "Adjust config.txt and press [R]-> Regenerate"
+                        "or [Q|Esc]-> Exit."
+                    )
                 get_error_popup(term, error_msg, prompt)
                 while True:
                     key = term.inkey(timeout=0.1)
                     if not key:
                         continue
-                    key_code = key.name if key.is_sequence else key.lower()
-                    if key_code in ("q", "KEY_ESCAPE"):
+                    action_key = key.name if key.is_sequence else key.lower()
+                    if action_key in ("q", "KEY_ESCAPE"):
                         print(
                             str(term.home) + str(term.clear),
                             end="",
@@ -72,7 +63,7 @@ if __name__ == "__main__":
                             term.normal + term.show_cursor, end="", flush=True
                         )
                         raise SystemExit(0)
-                    if key_code == "r":
+                    if action_key == "r":
                         print(
                             str(term.home) + str(term.clear),
                             end="",
@@ -80,17 +71,6 @@ if __name__ == "__main__":
                         )
                         break
     generate_output_file(grid, config, path)
-    # if (
-    #     config.width < MIN_WIDTH_FOR_42
-    #     or config.height < MIN_HEIGHT_FOR_42
-    # ):
-    #     get_error_popup(
-    #         term,
-    #         "Maze too small to render '42' pattern!",
-    #         prompt_text="Loading maze...",
-    #     )
-    #     term.inkey(timeout=2)
-    #     # print(str(term.home) + str(term.clear), end="", flush=True)
     display_grid = to_display_grid(grid, config.width, config.height, config)
     initialize_graphics(
         config,

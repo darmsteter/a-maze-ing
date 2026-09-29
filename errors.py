@@ -24,14 +24,14 @@ class ConfigurationException(Exception):
 class ActionInterrupted(Exception):
     """Represent an interruption caused by a user action."""
 
-    def __init__(self, key_code: str):
+    def __init__(self, action_key: str):
         """Initialize an action interruption.
 
         Args:
-            key_code: Keyboard key that caused the interruption.
+            action_key: Keyboard key that caused the interruption.
         """
 
-        self.key_code = key_code
+        self.action_key = action_key
 
 
 class ConfigurationFileError(Exception):
@@ -43,6 +43,6 @@ class ConfigurationFileError(Exception):
         Args:
             message: Description of the file-related error.
         """
-        
+
         self.message = message
         super().__init__(self.message)
