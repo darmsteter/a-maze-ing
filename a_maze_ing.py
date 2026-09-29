@@ -15,11 +15,24 @@ if __name__ == "__main__":
         exit()
     config_file = sys.argv[1]
     term = Terminal()
+    MIN_WIDTH_FOR_42 = 7
+    MIN_HEIGHT_FOR_42 = 9
     with term.fullscreen(), term.raw(), term.hidden_cursor():
         while True:
             try:
                 config = read_config_file(config_file)
                 generator = MazeGenerator()
+                if (
+                    config.width < MIN_WIDTH_FOR_42
+                    or config.height < MIN_HEIGHT_FOR_42
+                ):
+                    get_error_popup(
+                        term,
+                        "Maze too small to render '42' pattern!",
+                        prompt_text=term.blink("Loading maze..."),
+                    )
+                    term.inkey(timeout=1.5)
+                    print(str(term.home) + str(term.clear), end="", flush=True)
                 grid, path = generator.generate(
                     config.height,
                     config.width,

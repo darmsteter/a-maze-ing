@@ -87,6 +87,9 @@ def initialize_graphics(
         animate: bool = False,
         reuse_currentent_config: bool = False,
     ) -> tuple[list[list[Cell]], Config, str]:
+        MIN_WIDTH_FOR_42 = 7
+        MIN_HEIGHT_FOR_42 = 9
+
         while True:
             try:
                 if reuse_currentent_config:
@@ -139,6 +142,18 @@ def initialize_graphics(
                             flush=True,
                         )
                         break
+        if (
+            new_config.width < MIN_WIDTH_FOR_42
+            or new_config.height < MIN_HEIGHT_FOR_42
+        ):
+            session_state["needs_screen_clear"] = True
+            get_error_popup(
+                term,
+                "Maze too small to render '42' pattern!",
+                prompt_text=term.blink("Loading maze..."),
+            )
+            term.inkey(timeout=1.5)
+            print(str(term.home) + str(term.clear), end="", flush=True)
 
         new_display_grid = to_display_grid(
             new_grid, new_config.width, new_config.height, new_config
