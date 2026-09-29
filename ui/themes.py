@@ -88,9 +88,9 @@ LINE_THEMES = {
 }
 
 
-def get_tile(
+def get_rendered_line(
     term: Terminal,
-    tile_type: str,
+    rendered_line_type: str,
     theme_name: str = "tree_garden",
     mode: str = "emoji",
 ) -> Any:
@@ -98,8 +98,8 @@ def get_tile(
     default_theme = "tree_garden" if mode == "emoji" else "green"
 
     theme = themes_dict.get(theme_name, themes_dict[default_theme])
-    tile_formatter: Callable[[Terminal], str] = theme.get(
-        tile_type, lambda t: "  "
+    rendered_line_formatter: Callable[[Terminal], str] = theme.get(
+        rendered_line_type, lambda t: "  "
     )
 
-    return tile_formatter(term)
+    return rendered_line_formatter(term)

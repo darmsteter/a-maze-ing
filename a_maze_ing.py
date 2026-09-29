@@ -4,7 +4,7 @@ from config import read_config_file
 from errors import ConfigurationException, ConfigurationFileError
 from maze.generate_maze import MazeGenerator
 from maze.output_file import generate_output_file
-from ui import get_error_popup, grafic_initialization, to_display_grid
+from ui import get_error_popup, initialize_graphics, to_display_grid
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -41,7 +41,8 @@ if __name__ == "__main__":
                     prompt = " Press [Q] or [Esc] to exit "
                 else:
                     error_msg = str(e)
-                    prompt = "Adjust config.txt and regenerate [R]. Press [Q | Esc] to exit."
+                    prompt = ("Adjust config.txt and regenerate [R]."
+                              "Press [Q | Esc] to exit.")
                 get_error_popup(term, error_msg, prompt)
                 while True:
                     key = term.inkey(timeout=0.1)
@@ -67,7 +68,7 @@ if __name__ == "__main__":
                         break
     generate_output_file(grid, config, path)
     display_grid = to_display_grid(grid, config.width, config.height, config)
-    grafic_initialization(
+    initialize_graphics(
         config,
         grid,
         display_grid,
@@ -75,6 +76,4 @@ if __name__ == "__main__":
         theme_name="tree_garden",
         mode="emoji",
     )
-
-
 # tree -I '__pycache__|.mypy_cache|env|.git' --> to tree ignore

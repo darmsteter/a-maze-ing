@@ -25,28 +25,27 @@ def check_terminal_size(
     grid: list[list[Cell]],
 ) -> bool:
     if mode == "emoji" and display_grid:
-        inner_w = len(display_grid[0]) * 2
-        inner_h = len(display_grid)
+        content_width = len(display_grid[0]) * 2
+        content_height = len(display_grid)
     else:
         grid_width = len(grid[0]) if grid else 0
         grid_height = len(grid) if grid else 0
-        inner_w = (grid_width * 2 + 1) * 2
-        inner_h = grid_height * 2 + 1
+        content_width = (grid_width * 2 + 1) * 2
+        content_height = grid_height * 2 + 1
 
-    required_w = max(inner_w + 4, 99)
-    required_h = inner_h + 7
+    min_term_width = max(content_width + 4, 99)
+    min_term_height = content_height + 7
 
-    if term.width < required_w or term.height < required_h:
-        msg = term.blink_red3_on_lightgoldenrod1(
+    if term.width < min_term_width or term.height < min_term_height:
+        warning_msg = term.blink_red3_on_lightgoldenrod1(
             "Enlarge the terminal to see the maze! Regenerate (R)"
         )
+        msg_length = len(term.strip_seqs(warning_msg))
+        centered_x = max(0, (term.width - msg_length)) // 2
+        centered_y = term.height // 2
         print(term.home + term.clear, end="", flush=True)
         print(
-            term.move_xy(
-                max(0, (term.width - len(term.strip_seqs(msg))) // 2),
-                term.height // 2,
-            )
-            + msg,
+            term.move_xy(centered_x, centered_y) + warning_msg,
             flush=True,
         )
         return False
@@ -55,14 +54,14 @@ def check_terminal_size(
 
 def draw_controller_menu(
     term: Terminal,
-    x: int,
-    y: int,
+    start_x: int,
+    start_y: int,
     show_solution: bool,
     theme_name: str,
     mode: str,
-    frame_w: int = 0,
+    frame_width: int = 0,
 ) -> None:
-    bg_style = term.on_gray10
+    menu_bg_style = term.on_gray10
     sol_status = (
         term.bold_springgreen("ON") if show_solution else term.bold_red3("OFF")
     )
@@ -75,20 +74,21 @@ def draw_controller_menu(
         f"{term.bold_maroon('[A]')} Live Gen | "
         f"{term.bold_red3('[Q/ESC]')} EXIT"
     )
-    visible_len = len(term.strip_seqs(controls_menu))
-    inner_w = frame_w - 2 if frame_w > 0 else visible_len
+    menu_text_len = len(term.strip_seqs(controls_menu))
+    content_width = frame_width - 2 if frame_width > 0 else menu_text_len
 
-    left_pad = max(0, (inner_w - visible_len) // 2)
-    right_pad = max(0, inner_w - visible_len - left_pad)
+    padding_left = max(0, (content_width - menu_text_len) // 2)
+    padding_right = max(0, content_width - menu_text_len - padding_left)
 
     menu_row = (
-        bg_style(" " * left_pad)
-        + bg_style(controls_menu)
-        + bg_style(" " * right_pad)
+        menu_bg_style(" " * padding_left)
+        + menu_bg_style(controls_menu)
+        + menu_bg_style(" " * padding_right)
     )
 
-    print(f"{term.move_xy(x + 1, y)}{menu_row}", end="", flush=True)
-    # print(f"{term.move_xy(draw_x, y)}{controls_menu}", flush=True)
+    print(
+        f"{term.move_xy(start_x + 1, start_y)}{menu_row}", end="", flush=True
+    )
 
 
 def handle_input(
@@ -100,13 +100,22 @@ def handle_input(
     mode: str,
     show_solution: bool,
     generate_fn: GenerateFn,
-    refresh_ui_fn: RefreshUiFn,
+    refresh_ui_view_fn: RefreshUiFn,
     to_display_grid_fn: ToDisplayGridFn,
     path: str = "",
 ) -> None:
     from ui.renderers import get_error_popup
 
-    ALLOWED_KEYS = {"a", "q", "r", "s", "t", "m", "KEY_RESIZE", "KEY_ESCAPE"}
+    SUPPORTED_ACTION_KEYS = {
+        "a",
+        "q",
+        "r",
+        "s",
+        "t",
+        "m",
+        "KEY_RESIZE",
+        "KEY_ESCAPE",
+    }
     available_themes = (
         list(EMOJI_THEMES.keys())
         if mode == "emoji"
@@ -117,27 +126,30 @@ def handle_input(
         if theme_name in available_themes
         else 0
     )
-    next_key: str = ""
+    queued_input_key: str = ""
 
     while True:
         try:
-            if next_key:
-                key_code = next_key
-                next_key = ""
+            if queued_input_key:
+                action_key = queued_input_key
+                queued_input_key = ""
             else:
-                key = term.inkey(timeout=0.1)
-                if not key:
+                pressed_key = term.inkey(timeout=0.1)
+                if not pressed_key:
                     continue
-                key_name = key.name if key.is_sequence else None
-                key_code = key_name if key_name is not None else key.lower()
-            if key_code not in ALLOWED_KEYS:
+                if pressed_key.is_sequence and pressed_key.name is not None:
+                    key_identifier = pressed_key.name
+                else:
+                    key_identifier = pressed_key.lower()
+                action_key = key_identifier
+            if action_key not in SUPPORTED_ACTION_KEYS:
                 continue
 
-            if key_code == "KEY_ESCAPE" or key_code == "q":
+            if action_key == "KEY_ESCAPE" or action_key == "q":
                 break
 
-            elif key_code == "KEY_RESIZE":
-                refresh_ui_fn(
+            elif action_key == "KEY_RESIZE":
+                refresh_ui_view_fn(
                     grid,
                     display_grid,
                     theme_name,
@@ -146,7 +158,7 @@ def handle_input(
                     path,
                     False,
                 )
-            elif key_code == "r":
+            elif action_key == "r":
                 print(str(term.home) + str(term.clear), end="", flush=True)
                 try:
                     grid, config, path = generate_fn(config, False, False)
@@ -155,7 +167,7 @@ def handle_input(
                             grid, config.width, config.height, config
                         )
                     show_solution = False
-                    refresh_ui_fn(
+                    refresh_ui_view_fn(
                         grid,
                         display_grid,
                         theme_name,
@@ -166,9 +178,9 @@ def handle_input(
                     )
                 except ConfigurationException as e:
                     get_error_popup(term, str(e))
-            elif key_code == "s":
+            elif action_key == "s":
                 show_solution = not show_solution
-                refresh_ui_fn(
+                refresh_ui_view_fn(
                     grid,
                     display_grid,
                     theme_name,
@@ -177,10 +189,10 @@ def handle_input(
                     path,
                     True,
                 )
-            elif key_code == "t":
+            elif action_key == "t":
                 theme_index = (theme_index + 1) % len(available_themes)
                 theme_name = available_themes[theme_index]
-                refresh_ui_fn(
+                refresh_ui_view_fn(
                     grid,
                     display_grid,
                     theme_name,
@@ -189,7 +201,7 @@ def handle_input(
                     path,
                     False,
                 )
-            elif key_code == "m":
+            elif action_key == "m":
                 mode = "line" if mode == "emoji" else "emoji"
                 available_themes = (
                     list(EMOJI_THEMES.keys())
@@ -204,7 +216,7 @@ def handle_input(
                     display_grid = to_display_grid_fn(
                         grid, config.width, config.height, config
                     )
-                refresh_ui_fn(
+                refresh_ui_view_fn(
                     grid,
                     display_grid,
                     theme_name,
@@ -213,14 +225,14 @@ def handle_input(
                     path,
                     False,
                 )
-            elif key_code == "a":
+            elif action_key == "a":
                 grid, config, path = generate_fn(config, True, True)
                 if mode == "emoji":
                     display_grid = to_display_grid_fn(
                         grid, config.width, config.height, config
                     )
                 show_solution = False
-                refresh_ui_fn(
+                refresh_ui_view_fn(
                     grid,
                     display_grid,
                     theme_name,
@@ -230,4 +242,4 @@ def handle_input(
                     False,
                 )
         except ActionInterrupted as e:
-            next_key = e.key_code
+            queued_input_key = e.key_code

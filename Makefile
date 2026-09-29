@@ -13,7 +13,7 @@ install:
 
 run:
 	uv run python3 $(MAIN) $(CONFIG)
-
+ 
 debug:
 	uv run python3 -m pdb $(MAIN) $(CONFIG)
 
