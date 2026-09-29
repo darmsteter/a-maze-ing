@@ -505,7 +505,6 @@ def render_all(
         return False
 
     main_buff: list[str] = [str(term.home)]
-
     (
         frame_buff,
         maze_start_x,
