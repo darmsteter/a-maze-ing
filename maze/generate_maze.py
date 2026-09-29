@@ -51,7 +51,8 @@ class MazeGenerator:
             exit: Coordinates of the maze exit.
 
         Raises:
-            ConfigurationException: If the entry or exit is inside the 42 pattern.
+            ConfigurationException:
+                    If the entry or exit is inside the 42 pattern.
         """
 
         if len(grid) < 7 or len(grid[0]) < 9:
@@ -139,7 +140,7 @@ class MazeGenerator:
         neighbour: Cell adjacent to the current cell.
         direction: Direction from the current cell to the neighbour.
     """
-        
+
         match direction:
             case Directions.TOP:
                 current.top = 0

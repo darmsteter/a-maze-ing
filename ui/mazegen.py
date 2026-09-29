@@ -74,15 +74,15 @@ def initialize_graphics(
         step_display_grid = to_display_grid(
             step_grid, active_config.width, active_config.height, active_config
         )
-        currentent_theme = session_state.get("theme_name", theme_name)
-        currentent_mode = session_state.get("mode", mode)
+        current_theme = session_state.get("theme_name", theme_name)
+        current_mode = session_state.get("mode", mode)
 
         render_all(
             term,
             active_config,
             step_grid,
-            currentent_theme,
-            currentent_mode,
+            current_theme,
+            current_mode,
             show_solution=False,
             solution_coordinates=[],
             display_grid=step_display_grid,
@@ -185,18 +185,19 @@ def initialize_graphics(
                             flush=True,
                         )
                         break
-        if (
-            new_config.width < MIN_WIDTH_FOR_42
-            or new_config.height < MIN_HEIGHT_FOR_42
-        ):
-            session_state["needs_screen_clear"] = True
-            get_error_popup(
-                term,
-                "Maze too small to render '42' pattern!",
-                prompt_text=term.blink("Loading maze..."),
-            )
-            term.inkey(timeout=1.5)
-            print(str(term.home) + str(term.clear), end="", flush=True)
+        # if (
+        #     new_config.width < MIN_WIDTH_FOR_42
+        #     or new_config.height < MIN_HEIGHT_FOR_42
+        # ):
+        #     # session_state["needs_screen_clear"] = True
+        #     # print(str(term.home) + str(term.clear), end="", flush=True)
+        #     get_error_popup(
+        #         term,
+        #         "Maze too small to render '42' pattern!",
+        #         prompt_text="Loading maze...",
+        #     )
+        #     # term.inkey(timeout=2)
+        #     # print(str(term.home) + str(term.clear), end="", flush=True)
 
         new_display_grid = to_display_grid(
             new_grid, new_config.width, new_config.height, new_config

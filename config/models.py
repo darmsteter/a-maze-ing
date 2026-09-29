@@ -75,7 +75,7 @@ class Config(BaseModel):
                 if they are the same point, if the maze is larger
                 than 25x25, or if the output file is not a TXT file.
         """
-        
+
         if self.entry.x >= self.width or self.entry.y >= self.height:
             raise ValueError("Entry should be inside maze.")
         if self.exit.x >= self.width or self.exit.y >= self.height:

@@ -381,7 +381,7 @@ def get_error_popup(
     term: Terminal,
     error_msg: str,
     prompt_text: str = (
-        "Adjust config.txt and regenerate [R]. Press [Q | Esc] to exit."
+        "Adjust config.txt and press [R]-> Regenerate or [Q|Esc]-> Exit."
     ),
 ) -> None:
     """Display a configuration error popup in the terminal.
@@ -482,7 +482,6 @@ def render_all(
         return
 
     main_buff: list[str] = [str(term.home)]
-
     (
         frame_buff,
         maze_start_x,

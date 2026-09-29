@@ -18,7 +18,7 @@ def store_config_value(
         ConfigurationException: If the key or value is empty, the key is
             unknown, or the key has already been defined.
     """
-    
+
     if not key:
         raise ConfigurationException(
             "Empty key. " "Expected a key in the format KEY=VALUE."

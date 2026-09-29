@@ -10,7 +10,7 @@ def maze_counter() -> Callable[[], int]:
     Returns:
         A function that returns the next integer each time it is called.
     """
-    
+
     count = 0
 
     def counter() -> int:
@@ -33,7 +33,7 @@ def manhattan_distance(x1: int, x2: int, y1: int, y2: int) -> int:
     Returns:
         The Manhattan distance between the two points.
     """
-    
+
     return abs(x1 - x2) + abs(y1 - y2)
 
 
@@ -61,7 +61,7 @@ def update_neighbours(
         came_from: Dictionary storing the previous cell for each cell
             in the current path.
     """
-    
+
     walls = (cell.top, cell.right, cell.bottom, cell.left)
     for direction, dir_x, dir_y in DIRECTIONS:
         if walls[direction]:
@@ -95,7 +95,7 @@ def compile_path(
     Returns:
         A string of directions using ``N``, ``E``, ``S``, and ``W``.
     """
-    
+
     current = exit
     path: list[str] = []
     while current != entry:
@@ -127,7 +127,7 @@ def find_path(
         A string of directions describing the path from the entry to
         the exit.
     """
-    
+
     frontier: list[tuple[int, int, tuple[int, int]]] = []
     g_score = {entry: 0}
     counter = maze_counter()

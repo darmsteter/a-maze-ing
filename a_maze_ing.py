@@ -54,8 +54,8 @@ if __name__ == "__main__":
                     prompt = " Press [Q] or [Esc] to exit "
                 else:
                     error_msg = str(e)
-                    prompt = ("Adjust config.txt and regenerate [R]."
-                              "Press [Q | Esc] to exit.")
+                    prompt = ("Adjust config.txt and press [R]-> Regenerate"
+                              "or [Q|Esc]-> Exit.")
                 get_error_popup(term, error_msg, prompt)
                 while True:
                     key = term.inkey(timeout=0.1)
@@ -80,6 +80,17 @@ if __name__ == "__main__":
                         )
                         break
     generate_output_file(grid, config, path)
+    # if (
+    #     config.width < MIN_WIDTH_FOR_42
+    #     or config.height < MIN_HEIGHT_FOR_42
+    # ):
+    #     get_error_popup(
+    #         term,
+    #         "Maze too small to render '42' pattern!",
+    #         prompt_text="Loading maze...",
+    #     )
+    #     term.inkey(timeout=2)
+    #     # print(str(term.home) + str(term.clear), end="", flush=True)
     display_grid = to_display_grid(grid, config.width, config.height, config)
     initialize_graphics(
         config,
@@ -89,4 +100,3 @@ if __name__ == "__main__":
         theme_name="tree_garden",
         mode="emoji",
     )
-# tree -I '__pycache__|.mypy_cache|env|.git' --> to tree ignore
