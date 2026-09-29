@@ -5,6 +5,15 @@ from config.models import Config
 def generate_output_file(
     grid: list[list[Cell]], config: Config, path: str
 ) -> None:
+    """Write the generated maze and solution path to the output file.
+
+    Args:
+        grid: Two-dimensional list containing the generated maze cells.
+        config: Maze configuration containing the output file path,
+            entry coordinates, and exit coordinates.
+        path: String describing the path from the entry to the exit.
+    """
+    
     with open(config.output_file, "w") as output_file:
         for y in range(len(grid)):
             for x in range(len(grid[y])):

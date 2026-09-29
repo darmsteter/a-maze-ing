@@ -24,6 +24,20 @@ def check_terminal_size(
     display_grid: list[list[str]],
     grid: list[list[Cell]],
 ) -> bool:
+    """Check whether the terminal is large enough to display the maze.
+
+    Args:
+        term: Blessed terminal instance used to get terminal dimensions
+            and display the warning message.
+        mode: Current maze display mode.
+        display_grid: Formatted grid used in emoji mode.
+        grid: Generated maze grid.
+
+    Returns:
+        True if the terminal is large enough to display the maze,
+        otherwise False.
+    """
+
     if mode == "emoji" and display_grid:
         content_width = len(display_grid[0]) * 2
         content_height = len(display_grid)
@@ -61,6 +75,19 @@ def draw_controller_menu(
     mode: str,
     frame_width: int = 0,
 ) -> None:
+    """Draw the controller menu below the maze.
+
+    Args:
+        term: Blessed terminal instance used for styling and positioning.
+        start_x: Horizontal position where the menu starts.
+        start_y: Vertical position where the menu starts.
+        show_solution: Whether the solution is currently displayed.
+        theme_name: Name of the currently selected theme.
+        mode: Current maze display mode.
+        frame_width: Width available for the menu frame. If zero,
+            the menu text width is used.
+    """
+
     menu_bg_style = term.on_gray10
     sol_status = (
         term.bold_springgreen("ON") if show_solution else term.bold_red3("OFF")
@@ -104,6 +131,27 @@ def handle_input(
     to_display_grid_fn: ToDisplayGridFn,
     path: str = "",
 ) -> None:
+    """Handle keyboard input and update the maze interface.
+
+    Supported actions include regenerating the maze, toggling the
+    solution, changing the theme or display mode, starting live
+    generation, resizing the terminal, and exiting the application.
+
+    Args:
+        term: Blessed terminal instance used to read keyboard input.
+        config: Current maze configuration.
+        grid: Current maze grid.
+        display_grid: Formatted grid used in emoji mode.
+        theme_name: Name of the currently selected theme.
+        mode: Current maze display mode.
+        show_solution: Whether the solution is currently displayed.
+        generate_fn: Function used to generate or regenerate the maze.
+        refresh_ui_view_fn: Function used to redraw the maze interface.
+        to_display_grid_fn: Function used to convert the maze into a
+            display grid for emoji mode.
+        path: Current path from the maze entry to the exit.
+    """
+    
     from ui.renderers import get_error_popup
 
     SUPPORTED_ACTION_KEYS = {

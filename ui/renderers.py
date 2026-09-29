@@ -15,6 +15,20 @@ def buid_maze_frame_and_title(
     offset_y: int,
     title: str = "A_MAZE_ING GAME",
 ) -> list[str]:
+    """Build the frame and title for the maze display.
+
+    Args:
+        term: Blessed terminal instance used for styling and positioning.
+        frame_width: Width of the frame.
+        frame_height: Height of the frame.
+        offset_x: Horizontal position of the frame.
+        offset_y: Vertical position of the frame.
+        title: Title displayed at the top of the frame.
+
+    Returns:
+        A list of formatted terminal strings representing the frame.
+    """
+
     buffer: list[str] = []
     bg_style = term.on_gray10
     wall_style = term.bold_darkgreen
@@ -87,6 +101,21 @@ def render_frame(
     display_grid: list[list[str]],
     title: str = "A_MAZE_ING GAME",
 ) -> tuple[list[str], int, int, int, int, int, int]:
+    """Calculate the maze frame dimensions and position.
+
+    Args:
+        term: Blessed terminal instance used to determine terminal size.
+        config: Maze configuration containing maze dimensions.
+        grid: Generated maze grid.
+        mode: Current maze display mode.
+        display_grid: Formatted grid used in emoji mode.
+        title: Title displayed at the top of the frame.
+
+    Returns:
+        A tuple containing the frame buffer, maze start coordinates,
+        content height, frame width, and frame offsets.
+    """
+
     if (
         mode == "emoji"
         and display_grid
@@ -133,6 +162,20 @@ def build_line_maze_buffer(
     offset_x: int,
     offset_y: int,
 ) -> list[str]:
+    """Build the terminal buffer for line-based maze rendering.
+
+    Args:
+        term: Blessed terminal instance used for styling and positioning.
+        grid: Generated maze grid.
+        config: Maze configuration containing the entry and exit positions.
+        theme_name: Name of the display theme.
+        offset_x: Horizontal position where the maze starts.
+        offset_y: Vertical position where the maze starts.
+
+    Returns:
+        A list of formatted terminal strings representing the maze.
+    """
+
     wall_rendered_line = get_rendered_line(
         term, "wall", theme_name, mode="line"
     )
@@ -206,6 +249,19 @@ def build_emoji_maze_buffer(
     offset_x: int,
     offset_y: int,
 ) -> list[str]:
+    """Build the terminal buffer for emoji-based maze rendering.
+
+    Args:
+        term: Blessed terminal instance used for styling and positioning.
+        display_grid: Grid containing characters representing the maze.
+        theme_name: Name of the display theme.
+        offset_x: Horizontal position where the maze starts.
+        offset_y: Vertical position where the maze starts.
+
+    Returns:
+        A list of formatted terminal strings representing the maze.
+    """
+
     buffer = []
 
     for row, row_chars in enumerate(display_grid):
@@ -249,6 +305,27 @@ def render_solution_path(
     animate: bool = False,
     delay: float = 0.05,
 ) -> None:
+    """Render the solution path from the maze entry to the exit.
+
+    When animation is enabled, keyboard input can interrupt the rendering.
+
+    Args:
+        term: Blessed terminal instance used for rendering and input.
+        path_coordinates: Coordinates of cells in the solution path.
+        grid: Maze grid containing the path.
+        config: Maze configuration containing the entry and exit positions.
+        theme_name: Name of the display theme.
+        mode: Current maze display mode.
+        offset_x: Horizontal position where the maze starts.
+        offset_y: Vertical position where the maze starts.
+        animate: Whether to render the path step by step.
+        delay: Delay between animation steps in seconds.
+
+    Raises:
+        ActionInterrupted: If the user presses a supported control key
+            during animated rendering.
+    """
+
     if not path_coordinates:
         return
 
@@ -307,6 +384,14 @@ def get_error_popup(
         "Adjust config.txt and regenerate [R]. Press [Q | Esc] to exit."
     ),
 ) -> None:
+    """Display a configuration error popup in the terminal.
+
+    Args:
+        term: Blessed terminal instance used for positioning and styling.
+        error_msg: Error message to display.
+        prompt_text: Instructions displayed below the error message.
+    """
+
     popup_w = 64
     popup_h = 9
 
@@ -374,6 +459,23 @@ def render_all(
     display_grid: list[list[str]],
     animate_path: bool = False,
 ) -> None:
+    """Render the complete maze interface.
+
+    This includes the maze frame, maze contents, controller menu,
+    and optionally the solution path.
+
+    Args:
+        term: Blessed terminal instance used for rendering.
+        config: Maze configuration containing maze dimensions and positions.
+        grid: Generated maze grid.
+        theme_name: Name of the display theme.
+        mode: Current maze display mode.
+        show_solution: Whether to display the solution path.
+        solution_coordinates: Coordinates of cells in the solution path.
+        display_grid: Formatted grid used in emoji mode.
+        animate_path: Whether to animate the solution path.
+    """
+    
     from .controller_menu import check_terminal_size, draw_controller_menu
 
     if not check_terminal_size(term, mode, display_grid, grid):

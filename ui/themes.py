@@ -94,6 +94,20 @@ def get_rendered_line(
     theme_name: str = "tree_garden",
     mode: str = "emoji",
 ) -> Any:
+    """Get a rendered terminal string for the selected theme and element.
+
+    Args:
+        term: Blessed terminal instance used to apply terminal styling.
+        rendered_line_type: Type of element to render, such as ``wall``,
+            ``path``, ``start``, ``exit``, or ``solution_path``.
+        theme_name: Name of the theme to use.
+        mode: Display mode determining whether emoji or line themes are used.
+
+    Returns:
+        A formatted string rendered according to the selected theme
+        and element type.
+    """
+    
     themes_dict = EMOJI_THEMES if mode == "emoji" else LINE_THEMES
     default_theme = "tree_garden" if mode == "emoji" else "green"
 

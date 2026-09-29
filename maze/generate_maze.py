@@ -157,6 +157,13 @@ class MazeGenerator:
     def add_wall(
         self, current: Cell, neighbour: Cell, direction: Directions
     ) -> None:
+        """Add a wall between two neighbouring cells.
+
+        Args:
+            current: First cell.
+            neighbour: Cell adjacent to the current cell.
+            direction: Direction from the current cell to the neighbour.
+        """
         match direction:
             case Directions.TOP:
                 current.top = 1
@@ -174,6 +181,19 @@ class MazeGenerator:
     def find_neighbours(
         self, grid: list[list[Cell]], cell: Cell, visited: bool
     ) -> dict[Directions, Cell]:
+        """Find neighbouring cells with the specified visited state.
+
+        Cells belonging to the 42 pattern are excluded.
+
+        Args:
+            grid: Maze grid containing the cell.
+            cell: Cell whose neighbours should be checked.
+            visited: Required visited state of the neighbours.
+
+        Returns:
+            A dictionary mapping each available direction to its neighbouring cell.
+        """
+            
         neighbours: dict[Directions, Cell] = {}
         for direction, dir_x, dir_y in DIRECTIONS:
             x = cell.x + dir_x
@@ -189,6 +209,18 @@ class MazeGenerator:
     def find_walled_neighbours(
         self, grid: list[list[Cell]], cell: Cell
     ) -> dict[Directions, Cell]:
+        """Find neighbouring cells separated from the given cell by a wall.
+
+        Cells belonging to the 42 pattern are excluded.
+
+        Args:
+            grid: Maze grid containing the cell.
+            cell: Cell whose walled neighbours should be checked.
+
+        Returns:
+            A dictionary mapping each wall direction to the neighbouring cell.
+        """
+
         neighbours: dict[Directions, Cell] = {}
         walls = (cell.top, cell.right, cell.bottom, cell.left)
         for direction, dir_x, dir_y in DIRECTIONS:
@@ -203,11 +235,31 @@ class MazeGenerator:
         return neighbours
 
     def is_dead_end(self, cell: Cell, grid: list[list[Cell]]) -> bool:
+        """Check whether a cell is a dead end.
+
+        Args:
+            cell: Cell to check.
+            grid: Maze grid containing the cell.
+
+        Returns:
+            True if the cell has three walls and at least one valid walled
+            neighbour; otherwise, False.
+        """
+
         if cell.top + cell.right + cell.bottom + cell.left != 3:
             return False
         return bool(self.find_walled_neighbours(grid, cell))
 
     def find_dead_ends(self, grid: list[list[Cell]]) -> list[Cell]:
+        """Find all dead-end cells in the maze.
+
+        Args:
+            grid: Maze grid to search.
+
+        Returns:
+            A list of cells that are dead ends.
+        """
+
         dead_ends: list[Cell] = []
         for y in range(len(grid)):
             for x in range(len(grid[0])):
@@ -216,6 +268,15 @@ class MazeGenerator:
         return dead_ends
 
     def close_open_space(self, grid: list[list[Cell]]) -> bool:
+        """Add walls to overly open areas of the maze.
+
+        Args:
+            grid: Maze grid to modify.
+
+        Returns:
+            False after processing the grid.
+        """
+
         for y in range(len(grid)):
             for x in range(len(grid[y])):
                 cell = grid[y][x]
@@ -240,6 +301,12 @@ class MazeGenerator:
         return False
 
     def imperfect_maze(self, grid: list[list[Cell]]) -> None:
+        """Modify a perfect maze to remove dead ends and close open spaces.
+
+        Args:
+            grid: Maze grid to modify.
+        """
+
         while True:
             dead_ends = self.find_dead_ends(grid)
             if len(dead_ends) == 0:
@@ -259,6 +326,14 @@ class MazeGenerator:
     def _generate_prim(
         self, grid: list[list[Cell]], cell: Cell, callback: Any = None
     ) -> None:
+        """Generate a maze using Prim's algorithm.
+
+        Args:
+            grid: Maze grid to modify.
+            cell: Starting cell for maze generation.
+            callback: Optional function called with the grid during generation.
+        """
+
         frontier = list(self.find_neighbours(grid, cell, False).values())
         while frontier:
             current_cell = random.choice(frontier)
@@ -280,6 +355,14 @@ class MazeGenerator:
     def _generate_dfs(
         self, grid: list[list[Cell]], cell: Cell, callback: Any = None
     ) -> None:
+        """Generate a maze using depth-first search.
+
+        Args:
+            grid: Maze grid to modify.
+            cell: Starting cell for maze generation.
+            callback: Optional function called with the grid during generation.
+        """
+
         remaining_cells = len(grid) * len(grid[0]) - self.marked_cells - 1
         self.dfs_recursive(grid, remaining_cells, cell, callback)
 
@@ -290,6 +373,18 @@ class MazeGenerator:
         cell: Cell,
         callback: Any = None,
     ) -> bool:
+        """Recursively visit cells and generate passages using DFS.
+
+        Args:
+            grid: Maze grid to modify.
+            remaining_cells: Number of cells that still need to be visited.
+            cell: Current cell.
+            callback: Optional function called with the grid after a wall
+                is removed.
+
+        Returns:
+            True when all remaining cells have been visited; otherwise, False.
+        """
         remaining_cells -= 1
         if remaining_cells == 0:
             return True

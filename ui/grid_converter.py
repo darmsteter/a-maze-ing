@@ -5,6 +5,21 @@ from maze.models import Cell
 def to_display_grid(
     grid: list[list[Cell]], width: int, height: int, config: Config
 ) -> list[list[str]]:
+    """Convert the maze grid into a grid suitable for display.
+
+    The resulting grid represents maze cells, walls, the 42 pattern,
+    the entry, and the exit using single-character symbols.
+
+    Args:
+        grid: Two-dimensional list containing the maze cells.
+        width: Number of cells in each row of the maze.
+        height: Number of rows in the maze.
+        config: Maze configuration containing the entry and exit positions.
+
+    Returns:
+        A two-dimensional list of strings representing the maze for display.
+    """
+    
     display_width = width * 2 + 1
     display_height = height * 2 + 1
     display_grid = [

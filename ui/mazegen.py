@@ -28,6 +28,22 @@ def initialize_graphics(
     show_solution: bool = False,
     config_path: str = "config.txt",
 ) -> None:
+    """Initialize the terminal interface and run the maze session.
+
+    Sets up the terminal, displays the initial maze, and handles
+    user interaction for the current maze session.
+
+    Args:
+        config: Maze configuration used for the initial maze.
+        grid: Generated maze grid.
+        display_grid: Formatted grid used for display.
+        initial_path: Path from the maze entry to the exit.
+        theme_name: Name of the initial display theme.
+        mode: Initial maze display mode.
+        show_solution: Whether to display the solution initially.
+        config_path: Path to the maze configuration file.
+    """
+
     maze_generator = MazeGenerator()
     term = Terminal()
 
@@ -40,6 +56,16 @@ def initialize_graphics(
     }
 
     def animation_step_callback(step_grid: list[list[Cell]]) -> None:
+        """Update the display during animated maze generation.
+
+        Args:
+            step_grid: Current state of the maze grid during generation.
+
+        Raises:
+            ActionInterrupted: If the user presses a supported control key
+                during maze generation.
+        """
+            
         if session_state.get("needs_screen_clear", False):
             print(str(term.home) + str(term.clear), end="", flush=True)
             session_state["needs_screen_clear"] = False
@@ -87,6 +113,23 @@ def initialize_graphics(
         animate: bool = False,
         reuse_currentent_config: bool = False,
     ) -> tuple[list[list[Cell]], Config, str]:
+        """Generate a maze, save it to a file, and update the session state.
+
+        Args:
+            active_config: Current maze configuration.
+            animate: Whether to display the maze generation animation.
+            reuse_currentent_config: Whether to reuse the provided configuration
+                instead of reading it from the configuration file.
+
+        Returns:
+            A tuple containing the generated maze grid, its configuration,
+            and the path from the entry to the exit.
+
+        Raises:
+            SystemExit: If the user chooses to exit while an invalid
+                configuration is being handled.
+        """
+            
         MIN_WIDTH_FOR_42 = 7
         MIN_HEIGHT_FOR_42 = 9
 
@@ -175,6 +218,18 @@ def initialize_graphics(
         current_path: str = "",
         animate: bool = False,
     ) -> None:
+        """Refresh the maze interface using the current display settings.
+
+        Args:
+            current_grid: Current maze grid.
+            current_display_grid: Formatted grid used for display.
+            current_theme: Name of the current display theme.
+            current_mode: Current maze display mode.
+            should_show_solution: Whether to display the maze solution.
+            current_path: Path from the maze entry to the exit.
+            animate: Whether to animate the displayed solution path.
+        """
+            
         session_state["theme_name"] = current_theme
         session_state["mode"] = current_mode
         active_path = current_path if current_path else session_state["path"]
