@@ -449,20 +449,36 @@ def get_error_popup(
 
 
 def has_pattern_42(grid: list[list[Cell]]) -> bool:
+    """Check whether the maze contains the '42' pattern.
+    Args:
+        grid: The maze grid to inspect.
+    Returns:
+        True if at least one cell is marked as part of the '42'
+        pattern, False otherwise.
+    """
     return any(getattr(cell, "is_42", False) for row in grid for cell in row)
 
 
-def show_no_42_popup(term: Terminal, duration: float = 2.0) -> None:
-    msg = " Maze too small: no 42 pattern "
-    x = max(0, (term.width - len(msg)) // 2)
+def show_no_42_popup(term: Terminal, duration: float = 2.5) -> None:
+    """Display a temporary popup telling the user the '42' pattern is missing.
+
+    The screen is cleared, a centered message is drawn, and the popup stays
+    visible until either the given duration elapses or the user presses a
+    key. The screen is cleared again before returning.
+
+    Args:
+        term: The blessed Terminal instance used for drawing and input.
+        duration: Maximum time in seconds to show the popup.
+            Defaults to 2.0.
+    """
+    text = "  Maze too small to render '42' pattern! Loading maze...  "
+    styled = term.bold_red3_on_gold(text)
+
+    x = max(0, (term.width - len(text)) // 2)
     y = term.height // 2
 
     print(str(term.home) + str(term.clear), end="", flush=True)
-    print(
-        term.move_xy(x, y) + term.bold_black_on_darkgoldenrod1(msg),
-        end="",
-        flush=True,
-    )
+    print(term.move_xy(x, y) + styled, end="", flush=True)
     term.inkey(timeout=duration)
     print(str(term.home) + str(term.clear), end="", flush=True)
 
