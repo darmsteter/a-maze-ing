@@ -273,24 +273,44 @@ config/
 
 This makes it possible to reuse the configuration validation and parsing logic in another application without depending on the maze generator or UI.
 
-### Maze generation
+Maze generation
 
-Maze generation is isolated in:
+Maze generation is provided as a reusable Python package called mazegen.
 
-```text
-maze/generate_maze.py
-```
+The package can be installed separately from the generated wheel:
 
-The generator operates on the maze model rather than directly on terminal output. This means that another UI or output format can be added without changing the generation algorithm.
+pip install mazegen-1.0.0-py3-none-any.whl
 
-The same generator can also be used with different algorithms through the `ALGORITHM` configuration option.
+Basic usage:
+
+from mazegen.generate_maze import MazeGenerator
+
+generator = MazeGenerator()
+
+grid = generator.generate(
+    height=15,
+    width=15,
+    entry=(0, 0),
+    exit=(14, 14),
+    seed=42,
+    perfect="True",
+    algorithm="dfs",
+)
+
+generate() returns a two-dimensional grid of Cell objects:
+
+cell = grid[y][x]
+
+The package supports dfs and prim algorithms, perfect and imperfect mazes, and reproducible generation using the optional seed parameter.
+
+The generated grid can then be passed to the project's path-finding implementation to obtain a solution.
 
 ### Path finding
 
 Path finding is implemented separately from maze generation:
 
 ```text
-maze/find_path.py
+maze_utils/find_path.py
 ```
 
 This separation means that different path-finding strategies can be introduced without rewriting the maze generator.
