@@ -450,10 +450,12 @@ def get_error_popup(
 
 
 def has_pattern_42(grid: list[list[Cell]]) -> bool:
+    """Return True if any cell in the grid is part of the "42" pattern."""
     return any(getattr(cell, "is_42", False) for row in grid for cell in row)
 
 
 def show_no_42_popup(term: Terminal, duration: float = 2.0) -> None:
+    """Show a centered "no 42 pattern" popup for up to `duration` seconds."""
     msg = " Maze too small: no 42 pattern "
     x = max(0, (term.width - len(msg)) // 2)
     y = term.height // 2

@@ -36,9 +36,14 @@ if __name__ == "__main__":
                 path = find_path(
                     (config.exit.x, config.exit.y),
                     (config.entry.x, config.entry.y),
-                    grid)
+                    grid,
+                )
                 break
-            except (ConfigurationFileError, ConfigurationException, MazeGenerationError) as e:
+            except (
+                ConfigurationFileError,
+                ConfigurationException,
+                MazeGenerationError,
+            ) as e:
                 print(f"Configuration error: {e}")
                 if isinstance(e, ConfigurationFileError):
                     error_msg = (
