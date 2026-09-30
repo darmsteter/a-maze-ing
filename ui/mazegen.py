@@ -170,11 +170,15 @@ def initialize_graphics(
                 new_path = find_path(
                     (new_config.exit.x, new_config.exit.y),
                     (new_config.entry.x, new_config.entry.y),
-                    new_grid
+                    new_grid,
                 )
                 generate_output_file(new_grid, new_config, new_path)
                 break
-            except (ConfigurationFileError, ConfigurationException, MazeGenerationError) as e:
+            except (
+                ConfigurationFileError,
+                ConfigurationException,
+                MazeGenerationError,
+            ) as e:
                 session_state["needs_screen_clear"] = True
                 get_error_popup(term, str(e))
                 while True:
