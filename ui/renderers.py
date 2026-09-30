@@ -456,7 +456,7 @@ def has_pattern_42(grid: list[list[Cell]]) -> bool:
 
 def show_no_42_popup(term: Terminal, duration: float = 2.0) -> None:
     """Show a centered "no 42 pattern" popup for up to `duration` seconds."""
-    msg = " Maze too small: no 42 pattern "
+    msg = " Maze too small: no 42 pattern --> MAZE LOADING..."
     x = max(0, (term.width - len(msg)) // 2)
     y = term.height // 2
 

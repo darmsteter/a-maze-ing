@@ -73,7 +73,7 @@ class Config(BaseModel):
         Raises:
             ValueError: If the entry or exit is outside the maze,
                 if they are the same point, if the maze is larger
-                than 25x25, or if the output file is not a TXT file.
+                than 72x32, or if the output file is not a TXT file.
         """
 
         if self.entry.x >= self.width or self.entry.y >= self.height:
@@ -82,10 +82,10 @@ class Config(BaseModel):
             raise ValueError("Exit should be inside maze.")
         if self.entry.x == self.exit.x and self.entry.y == self.exit.y:
             raise ValueError("Exit and enty shouldn't be same point.")
-        if self.width > 25 or self.height > 25:
+        if self.width > 72 or self.height > 32:
             raise ValueError(
                 f"Maze dimensions too big ({self.width}x{self.height}). "
-                "Maximum allowed is 25x25!"
+                "Maximum allowed is 72x32!"
             )
         if not self.output_file.endswith(".txt"):
             raise ValueError("Output file should end with .txt")
