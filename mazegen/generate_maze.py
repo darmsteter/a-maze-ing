@@ -94,22 +94,13 @@ class MazeGenerator:
             width: Number of columns in the maze.
             entry: Coordinates of the maze entry.
             exit: Coordinates of the maze exit.
-<<<<<<< HEAD:mazegen/generate_maze.py
             seed: Optional seed used for reproducible generation.
-=======
-            seed: Optional seed used for random generation.
->>>>>>> 9f35a3f375ef4a2ba92d18def85dd1852af96c82:maze/generate_maze.py
             perfect: Whether the maze should remain perfect.
             algorithm: Maze generation algorithm to use.
             callback: Optional function called with the grid during generation.
 
         Returns:
-<<<<<<< HEAD:mazegen/generate_maze.py
             The generated maze grid.
-=======
-            A tuple containing the generated maze grid and the path from
-            the entry to the exit.
->>>>>>> 9f35a3f375ef4a2ba92d18def85dd1852af96c82:maze/generate_maze.py
         """
 
         grid = self.create_grid(height, width)
