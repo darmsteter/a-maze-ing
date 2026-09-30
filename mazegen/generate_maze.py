@@ -363,7 +363,7 @@ class MazeGenerator:
             callback: Optional function called with the grid during generation.
         """
 
-        remaining_cells = len(grid) * len(grid[0]) - self.marked_cells - 1
+        remaining_cells = len(grid) * len(grid[0]) - self.marked_cells
         self.dfs_recursive(grid, remaining_cells, cell, callback)
 
     def dfs_recursive(
